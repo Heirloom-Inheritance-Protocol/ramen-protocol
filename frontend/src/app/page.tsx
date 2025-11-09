@@ -1,5 +1,5 @@
-import { SparklesHero } from "@/components/SparklesHero";
+import { BackgroundLinesHero } from "@/components/BackgroundHero";
 
 export default function Home() {
-  return <SparklesHero />;
+  return <BackgroundLinesHero />;
 }
