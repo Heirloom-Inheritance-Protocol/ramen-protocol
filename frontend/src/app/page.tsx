@@ -1,9 +1,17 @@
 import { BackgroundLinesHero } from "@/components/BackgroundHero";
+import { FloatingNav } from "@/components/ui/floating-navbar";
 import { ScrollIndicator } from "@/components/ui/scroll-indicator";
 
 export default function Home() {
   return (
     <>
+      <FloatingNav
+        navItems={[
+          { name: "Home", link: "#" },
+          { name: "About", link: "#about" },
+          { name: "Contact", link: "#contact" },
+        ]}
+      />
       <div className="relative min-h-screen">
         <BackgroundLinesHero />
         <ScrollIndicator targetId="content" />
