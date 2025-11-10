@@ -1,10 +1,20 @@
+import { Suspense } from "react";
+
+import Link from "next/link";
+
 import { BackgroundLinesHero } from "@/components/BackgroundHero";
 import { FloatingNav } from "@/components/ui/floating-navbar";
 import { ScrollIndicator } from "@/components/ui/scroll-indicator";
+import { WobbleCardDemo } from "@/components/ui/wobble-card-demo";
 
 interface FooterLink {
   href: string;
   label: string;
+}
+
+interface Highlight {
+  title: string;
+  description: string;
 }
 
 const footerLinks: FooterLink[] = [
@@ -12,6 +22,46 @@ const footerLinks: FooterLink[] = [
   { href: "#content", label: "How It Works" },
   { href: "#contact", label: "Contact" },
 ];
+
+const safeguardHighlights: Highlight[] = [
+  {
+    title: "Adaptive Guardianship",
+    description:
+      "Define time-locked release rules and dynamic trustees to fit evolving family structures.",
+  },
+  {
+    title: "Zero-Knowledge Escrow",
+    description:
+      "Keep private data opaque while still proving eligibility conditions on-chain.",
+  },
+  {
+    title: "Continuity Alerts",
+    description:
+      "Receive proactive check-ins that ensure heirs are ready when activation thresholds are met.",
+  },
+  {
+    title: "Multi-Asset Coverage",
+    description:
+      "Orchestrate digital, legal, and sentimental assets from one resilient protocol dashboard.",
+  },
+];
+
+interface HighlightCardProps {
+  highlight: Highlight;
+}
+
+function HighlightCard({ highlight }: HighlightCardProps) {
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm dark:border-neutral-700 dark:bg-neutral-900/40">
+      <p className="text-lg font-semibold text-neutral-900 dark:text-white">
+        {highlight.title}
+      </p>
+      <p className="mt-2 text-neutral-600 dark:text-neutral-400">
+        {highlight.description}
+      </p>
+    </div>
+  );
+}
 
 function Footer() {
   return (
@@ -68,41 +118,58 @@ export default function Home() {
           <h2 className="text-3xl md:text-5xl font-bold text-center mb-8 text-neutral-900 dark:text-white">
             How It Works
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
-            <div className="p-6 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-              <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg mb-4 flex items-center justify-center text-white font-bold text-xl">
-                1
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-neutral-900 dark:text-white">
-                Create Your Legacy
+          <p className="mx-auto max-w-2xl text-center text-lg text-neutral-600 dark:text-neutral-400">
+            The Heirloom Inheritance Protocol guides each family through secure
+            stewardship, transforming private knowledge into an enduring digital
+            legacy.
+          </p>
+          <div className="mt-16">
+            <Suspense
+              fallback={
+                <div className="h-[600px] w-full animate-pulse rounded-3xl bg-neutral-200/40 dark:bg-neutral-800/40" />
+              }
+            >
+              <WobbleCardDemo />
+            </Suspense>
+          </div>
+          <div className="mt-20 grid gap-12 md:grid-cols-12">
+            <div className="space-y-6 md:col-span-5">
+              <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white">
+                Built for continuity and clarity
               </h3>
               <p className="text-neutral-600 dark:text-neutral-400">
-                Document your knowledge, assets, and wisdom for future
-                generations.
+                Each vault is calibrated for transparency with the right people
+                at the right time. We orchestrate cryptographic handshakes,
+                regulatory readiness, and real-world triggers so your intent is
+                never lost.
               </p>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 text-neutral-700 dark:text-neutral-300">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-blue-500" />
+                  <p>
+                    Model contingency plans with scenario testing and smart
+                    probate simulations.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3 text-neutral-700 dark:text-neutral-300">
+                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-purple-500" />
+                  <p>
+                    Link legal counsel, executors, and custodians inside a
+                    unified coordination layer.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="#contact"
+                className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+              >
+                Talk to a protocol advisor
+              </Link>
             </div>
-            <div className="p-6 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-              <div className="w-12 h-12 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg mb-4 flex items-center justify-center text-white font-bold text-xl">
-                2
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-neutral-900 dark:text-white">
-                Secure Storage
-              </h3>
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Your heirloom data is encrypted and stored securely on-chain.
-              </p>
-            </div>
-            <div className="p-6 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-              <div className="w-12 h-12 bg-linear-to-br from-pink-500 to-red-600 rounded-lg mb-4 flex items-center justify-center text-white font-bold text-xl">
-                3
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-neutral-900 dark:text-white">
-                Pass It On
-              </h3>
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Your descendants can access their inheritance when the time is
-                right.
-              </p>
+            <div className="grid gap-6 md:col-span-7 md:grid-cols-2">
+              {safeguardHighlights.map((highlight) => (
+                <HighlightCard key={highlight.title} highlight={highlight} />
+              ))}
             </div>
           </div>
         </div>
