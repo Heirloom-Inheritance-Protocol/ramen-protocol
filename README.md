@@ -30,8 +30,10 @@ Short concept: A tool that allows people who wish to preserve cultural assets or
 # Team  
 **Team/Individual Name:**  
 - Keita Kuroiwa, Dario Macs
+
 **GitHub Handles:**  
 - cruujon, DaroMacs
+
 **Devfolio Handles:**  
 - cruujon, daro_macs
 ---
