@@ -1,4 +1,3 @@
-# Heirloom Inheritance Protocol — MVP Build Doc latest ver.
 
 ##  Folder Structure
 
@@ -16,7 +15,7 @@ arg25-projects/
 └── 
 ```
 
-
+# Heirloom Inheritance Protocol — MVP Build Doc latest ver.
 
 ## 0) One-line Purpose
 
