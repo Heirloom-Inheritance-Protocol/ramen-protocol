@@ -324,6 +324,28 @@ Complete the MVP development and deploy all components.
   encrypt → upload → register → claim → decrypt.  
 - Users can now experience the full MVP on the live deployment.
 
+
+# Next Steps (After Invisible Garden)
+
+## Short Term
+- Deploy to mainnet and expand across multiple L2s.
+- Upgrade encryption model (e.g., migrate from PBKDF2 → ECDH-based key agreement).
+- Integrate with EAS so other protocols can reuse inheritance lineage permissionlessly.
+
+## Medium Term
+- **AI Integration**
+  - Automatically estimate cultural/economic importance scores for each inheritance.
+  - Auto-tag inherited data for better discoverability.
+  - Match inheritors and successors algorithmically.
+
+- **Funding Mechanisms**
+  - Integrate Gitcoin stack for donation and grant-based preservation funding.
+  - Run funding rounds for cultural assets.
+  - Collaborate with local governments and cultural institutions to test real-world deployments.
+
+---
+
+
 ---
 
 # Final Wrap-Up
@@ -347,34 +369,11 @@ Complete the MVP development and deploy all components.
 
 ---
 
-# Learnings
+# Learnings(to be updated)
 
 During ARG25, we gained:
 
-- A deeper understanding of the constraints and possibilities of client-side encryption in browser-based dApps.
-- Practical insights into connecting decentralized storage (IPFS) with composable smart contract metadata.
-- A framework for turning abstract cultural-preservation concepts into a minimal but working cryptographic protocol.
-- Recognition of the limitations of address-based key derivation and the need for future ECDH-based upgrades.
-
----
-
-# Next Steps
-
-## Short Term
-- Deploy to mainnet and expand across multiple L2s.
-- Upgrade encryption model (e.g., migrate from PBKDF2 → ECDH-based key agreement).
-- Integrate with EAS so other protocols can reuse inheritance lineage permissionlessly.
-
-## Medium Term
-- **AI Integration**
-  - Automatically estimate cultural/economic importance scores for each inheritance.
-  - Auto-tag inherited data for better discoverability.
-  - Match inheritors and successors algorithmically.
-
-- **Funding Mechanisms**
-  - Integrate Gitcoin stack for donation and grant-based preservation funding.
-  - Run funding rounds for cultural assets.
-  - Collaborate with local governments and cultural institutions to test real-world deployments.
+- aaaaaa
 
 ---
 
