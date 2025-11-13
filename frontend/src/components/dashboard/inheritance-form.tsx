@@ -10,6 +10,7 @@ import {
   getOwnerInheritances,
   InheritanceData,
 } from "@/lib/services/heriloomProtocol";
+import { encryptFileForBoth } from "@/lib/encryption";
 
 interface InheritanceFormProps {
   className?: string;
@@ -98,14 +99,35 @@ export function InheritanceForm({
 
     if (!selectedFile) return;
 
+    if (!user?.wallet?.address) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
     setUploading(true);
     setUploadingStage("ipfs");
     try {
-      // Upload file to IPFS
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+      // 1. Encrypt the file for both owner and successor
+      console.log(
+        "Encrypting file for owner and successor:",
+        user.wallet.address,
+        successorWallet,
+      );
+      const { encryptedPackage } = await encryptFileForBoth(
+        selectedFile,
+        user.wallet.address,
+        successorWallet,
+      );
 
-      console.log("formData", selectedFile);
+      // 2. Upload encrypted package to IPFS
+      const formData = new FormData();
+      formData.append(
+        "file",
+        encryptedPackage,
+        `${selectedFile.name}.encrypted`,
+      );
+
+      console.log("Uploading encrypted file to IPFS...");
 
       const response = await fetch("/api/upload-ipfs", {
         method: "POST",
@@ -118,7 +140,7 @@ export function InheritanceForm({
 
       const data = await response.json();
 
-      console.log("File uploaded to IPFS:", data);
+      console.log("Encrypted file uploaded to IPFS:", data);
 
       // Create inheritance on blockchain
       setUploadingStage("blockchain");
@@ -206,9 +228,10 @@ export function InheritanceForm({
               Upload a PDF file and designate a successor wallet
             </p>
             <p className="text-sm text-neutral-600 dark:text-neutral-200">
-              Your PDF will be encrypted client-side before being uploaded to
-              IPFS. Only the designated successor will be able to decrypt and
-              download it.
+              🔐 Your PDF will be encrypted client-side with AES-256-GCM before
+              being uploaded to IPFS. Both you (the owner) and the designated
+              successor can decrypt and download it using your respective wallet
+              addresses.
             </p>
           </div>
 

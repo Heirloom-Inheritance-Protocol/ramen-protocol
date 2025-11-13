@@ -8,6 +8,7 @@ import {
   deleteInheritance,
   InheritanceData,
 } from "@/lib/services/heriloomProtocol";
+import { decryptFileForBoth } from "@/lib/encryption";
 
 export function ReceivedInheritances(): JSX.Element {
   const { user } = usePrivy();
@@ -20,6 +21,7 @@ export function ReceivedInheritances(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<bigint | null>(null);
+  const [downloadingId, setDownloadingId] = useState<bigint | null>(null);
 
   // Fetch inheritances from blockchain
   useEffect(() => {
@@ -132,6 +134,55 @@ export function ReceivedInheritances(): JSX.Element {
       );
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleDownloadAndDecrypt(
+    inheritance: InheritanceData,
+    userAddress: string,
+  ) {
+    try {
+      setDownloadingId(inheritance.id);
+      console.log("Fetching encrypted file from IPFS...");
+
+      // 1. Fetch encrypted file from IPFS
+      const ipfsUrl = getIpfsUrl(inheritance.ipfsHash);
+      const response = await fetch(ipfsUrl);
+      if (!response.ok) throw new Error("Failed to fetch from IPFS");
+
+      const encryptedPackage = await response.arrayBuffer();
+      console.log("File fetched, decrypting...");
+
+      // 2. Decrypt using user's address (works for both owner and successor)
+      const decryptedData = await decryptFileForBoth(
+        encryptedPackage,
+        userAddress,
+        inheritance.owner,
+        inheritance.successor,
+      );
+
+      // 3. Create downloadable blob
+      const blob = new Blob([decryptedData], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+
+      // 4. Trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = inheritance.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log("File decrypted and downloaded successfully");
+    } catch (error) {
+      console.error("Decryption failed:", error);
+      alert(
+        "Failed to decrypt file. You may not be authorized to access this file. Error: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
+    } finally {
+      setDownloadingId(null);
     }
   }
 
@@ -364,50 +415,38 @@ export function ReceivedInheritances(): JSX.Element {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() =>
-                            window.open(
-                              getIpfsUrl(inheritance.ipfsHash),
-                              "_blank",
+                            handleDownloadAndDecrypt(
+                              inheritance,
+                              user?.wallet?.address || "",
                             )
                           }
-                          className="inline-flex items-center justify-center rounded-lg p-1.5 text-neutral-600 transition hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-700"
-                          aria-label="Open in new tab"
+                          disabled={downloadingId === inheritance.id}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white cursor-pointer"
                         >
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
+                          {downloadingId === inheritance.id ? (
+                            <>
+                              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent dark:border-neutral-900 dark:border-t-transparent" />
+                              Decrypting...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                className="h-3.5 w-3.5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                />
+                              </svg>
+                              Download
+                            </>
+                          )}
                         </button>
-                        <a
-                          href={getIpfsUrl(inheritance.ipfsHash)}
-                          download
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
-                        >
-                          <svg
-                            className="h-3.5 w-3.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                            />
-                          </svg>
-                          Download
-                        </a>
                         <button
                           onClick={() => handleDelete(inheritance.id)}
                           disabled={deletingId === inheritance.id}
@@ -664,28 +703,40 @@ export function ReceivedInheritances(): JSX.Element {
                               />
                             </svg>
                           </button>
-                          <a
-                            href={getIpfsUrl(inheritance.ipfsHash)}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+                          <button
+                            onClick={() =>
+                              handleDownloadAndDecrypt(
+                                inheritance,
+                                user?.wallet?.address || "",
+                              )
+                            }
+                            disabled={downloadingId === inheritance.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white cursor-pointer"
                           >
-                            <svg
-                              className="h-3.5 w-3.5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                              />
-                            </svg>
-                            Download
-                          </a>
+                            {downloadingId === inheritance.id ? (
+                              <>
+                                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent dark:border-neutral-900 dark:border-t-transparent" />
+                                Decrypting...
+                              </>
+                            ) : (
+                              <>
+                                <svg
+                                  className="h-3.5 w-3.5"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                  />
+                                </svg>
+                                Download
+                              </>
+                            )}
+                          </button>
                         </div>
                       </td>
                     </tr>
