@@ -1,5 +1,23 @@
 # Heirloom Inheritance Protocol — MVP Build Doc latest ver.
 
+##  Folder Structure
+
+```
+arg25-projects/
+|
+├── README.md # You are here (program overview)
+├── README_template.md # Base template for your project README
+|
+├── your-project/
+|   |   ├── README.md # Your project progress log
+|   |   └── assets/ # (optional) diagrams, screenshots, etc.
+|   └── ...
+|
+└── 
+```
+
+
+
 ## 0) One-line Purpose
 
 Build a **minimal product** that makes *who passed which secret to whom* verifiable on-chain, while keeping the **actual content encrypted** so that **only the giver and the successor** can read it at each hand-off.
