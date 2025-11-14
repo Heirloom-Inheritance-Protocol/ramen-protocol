@@ -1,5 +1,3 @@
-![Image](./header.png)git
-
 # Stylus Digital Inheritance Contract
 
 This crate contains a Stylus smart contract that models a secure digital inheritance workflow for the Heirloom protocol. Instead of the `Counter` demo that ships with the Stylus starter, the implementation in `src/lib.rs` maintains inheritance records, tracks ownership and successor access, and enforces simple safety guards directly in Rust.
