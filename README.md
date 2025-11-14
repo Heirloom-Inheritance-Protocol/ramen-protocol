@@ -1,47 +1,3 @@
-## Folder Structure
-
-```
-.
-|-- README.md
-|-- frontend
-|   |-- README.md
-|   |-- components.json
-|   |-- eslint.config.mjs
-|   |-- next-env.d.ts
-|   |-- next.config.ts
-|   |-- package-lock.json
-|   |-- package.json
-|   |-- postcss.config.mjs
-|   |-- public
-|   |   |-- file.svg
-|   |   |-- globe.svg
-|   |   |-- heritage-tr.png
-|   |   |-- heritage.png
-|   |   |-- next.svg
-|   |   |-- vercel.svg
-|   |   `-- window.svg
-|   |-- src
-|   |   |-- app
-|   |   |-- components
-|   |   |-- lib
-|   |   `-- providers
-|   `-- tsconfig.json
-`-- stylus
-    |-- Cargo.lock
-    |-- Cargo.toml
-    |-- README.md
-    |-- header.png
-    |-- licenses
-    |   |-- Apache-2.0
-    |   |-- COPYRIGHT.md
-    |   |-- DCO.txt
-    |   `-- MIT
-    |-- rust-toolchain.toml
-    `-- src
-        |-- lib.rs
-        `-- main.rs
-```
-
 # Heritage Inheritance Protocol
 
 _A tool for securely passing cultural assets or secret knowledge across generations._
@@ -63,6 +19,7 @@ Short concept: A tool that allows people who wish to preserve cultural assets or
 - **Deck / Presentation:** https://docs.google.com/presentation/d/1HbvQ5WrT1ixoNJFvNQ_snX9PHyXFh6y4JEpv3stpHbs/edit?usp=sharing
 
 ---
+
 # Team
 
 **Team/Individual Name:**
@@ -305,6 +262,50 @@ External organizations can use the verifiable on-chain proof of inheritance to:
 - Apply **gating criteria** (e.g., only contributors of a specific inheritance chain can access a program, benefit, or grant)
 
 This ensures that historical knowledge is preserved with integrity and that contributors receive recognition and opportunities aligned with their cultural work.
+
+## Folder Structure
+
+```
+.
+|-- README.md
+|-- frontend
+|   |-- README.md
+|   |-- components.json
+|   |-- eslint.config.mjs
+|   |-- next-env.d.ts
+|   |-- next.config.ts
+|   |-- package-lock.json
+|   |-- package.json
+|   |-- postcss.config.mjs
+|   |-- public
+|   |   |-- file.svg
+|   |   |-- globe.svg
+|   |   |-- heritage-tr.png
+|   |   |-- heritage.png
+|   |   |-- next.svg
+|   |   |-- vercel.svg
+|   |   `-- window.svg
+|   |-- src
+|   |   |-- app
+|   |   |-- components
+|   |   |-- lib
+|   |   `-- providers
+|   `-- tsconfig.json
+`-- stylus
+    |-- Cargo.lock
+    |-- Cargo.toml
+    |-- README.md
+    |-- header.png
+    |-- licenses
+    |   |-- Apache-2.0
+    |   |-- COPYRIGHT.md
+    |   |-- DCO.txt
+    |   `-- MIT
+    |-- rust-toolchain.toml
+    `-- src
+        |-- lib.rs
+        `-- main.rs
+```
 
 # Encryption & Decryption Flow (MVP)
 
