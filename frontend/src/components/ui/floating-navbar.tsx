@@ -5,6 +5,7 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
+import { usePrivy } from "@privy-io/react-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { JSX, useState } from "react";
@@ -20,11 +21,17 @@ export const FloatingNav = ({
   navItems: Array<NavItem & { icon?: JSX.Element }>;
   className?: string;
 }) => {
+  const { ready, authenticated, user } = usePrivy();
   const { scrollYProgress } = useScroll();
   const pathname = usePathname();
 
   const [visible, setVisible] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isWalletConnected =
+    ready && authenticated && Boolean(user?.wallet?.address);
+
+  const restrictedLinks = ["/inherit", "/received-vault", "/dashboard"];
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     // Check if current is not undefined and is a number
@@ -68,6 +75,24 @@ export const FloatingNav = ({
         <nav className="hidden sm:flex items-center gap-4">
           {navItems.map((navItem, idx: number) => {
             const isActive = pathname === navItem.link;
+            const isRestricted = restrictedLinks.includes(navItem.link);
+            const isDisabled = isRestricted && !isWalletConnected;
+
+            if (isDisabled) {
+              return (
+                <span
+                  key={`link-disabled=${idx}`}
+                  aria-disabled="true"
+                  className={cn(
+                    "relative items-center flex space-x-1 pb-1 border-b-2 border-transparent text-neutral-400 cursor-not-allowed select-none",
+                    "dark:text-neutral-500",
+                  )}
+                >
+                  <span className="text-sm">{navItem.name}</span>
+                </span>
+              );
+            }
+
             return (
               <Link
                 key={`link=${idx}`}
@@ -114,6 +139,28 @@ export const FloatingNav = ({
               <nav className="flex flex-col p-4 gap-2">
                 {navItems.map((navItem, idx: number) => {
                   const isActive = pathname === navItem.link;
+                  const isRestricted = restrictedLinks.includes(navItem.link);
+                  const isDisabled = isRestricted && !isWalletConnected;
+
+                  if (isDisabled) {
+                    return (
+                      <span
+                        key={`mobile-link-disabled=${idx}`}
+                        aria-disabled="true"
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-3 rounded-lg text-neutral-500 dark:text-neutral-500 cursor-not-allowed select-none",
+                        )}
+                      >
+                        {navItem.icon && (
+                          <span className="shrink-0">{navItem.icon}</span>
+                        )}
+                        <span className="text-sm font-medium">
+                          {navItem.name}
+                        </span>
+                      </span>
+                    );
+                  }
+
                   return (
                     <Link
                       key={`mobile-link=${idx}`}
