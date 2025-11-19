@@ -155,6 +155,49 @@ export function InheritanceForm({
 
       console.log("Inheritance created with ID:", inheritanceId.toString());
 
+      // Save to Arkiv database
+      try {
+        const arkivPayload = JSON.stringify({
+          inheritanceId: inheritanceId.toString(),
+          owner: user.wallet.address,
+          successor: successorWallet,
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          fileType: selectedFile.type,
+          tag: selectedTag,
+          ipfsHash: data.hash,
+          ipfsUrl: data.url,
+          createdAt: new Date().toISOString(),
+        });
+
+        const arkivResponse = await fetch("/api/arkiv", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            payload: arkivPayload,
+            contentType: "application/json",
+            attributes: [
+              { key: "type", value: "inheritance-asset" },
+              { key: "inheritanceId", value: inheritanceId.toString() },
+              { key: "tag", value: selectedTag },
+            ],
+            expiresIn: 86400 * 365, // 1 year expiration
+          }),
+        });
+
+        if (arkivResponse.ok) {
+          const arkivData = await arkivResponse.json();
+          console.log("Asset saved to Arkiv:", arkivData);
+        } else {
+          console.warn("Failed to save to Arkiv, but inheritance was created");
+        }
+      } catch (arkivError) {
+        console.error("Error saving to Arkiv:", arkivError);
+        // Don't fail the whole process if Arkiv save fails
+      }
+
       // Refresh inheritances from blockchain
       if (user?.wallet?.address) {
         setLoadingInheritances(true);

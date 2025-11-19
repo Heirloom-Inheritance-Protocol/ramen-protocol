@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@arkiv-network/sdk": "^0.4.5",
     "@privy-io/react-auth": "^3.6.1",
     "@semaphore-protocol/contracts": "^4.14.0",
     "@semaphore-protocol/identity": "^4.14.0",
