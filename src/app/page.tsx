@@ -8,6 +8,7 @@ import { ScrollIndicator } from "@/components/ui/scroll-indicator";
 import { WobbleCardDemo } from "@/components/ui/wobble-card-demo";
 import { Card } from "@/components/ui/card";
 import { TestArkivButton } from "@/components/ui/test-arkiv-button";
+import { TestMerkleTreeButton } from "@/components/ui/test-merkle-tree-button";
 import { MAIN_NAV_ITEMS } from "@/lib/navigation";
 
 interface FooterLink {
@@ -101,6 +102,7 @@ export default function Home() {
   return (
     <>
       <TestArkivButton />
+      <TestMerkleTreeButton />
       <FloatingNav navItems={MAIN_NAV_ITEMS} />
       <div className="relative bg-white dark:bg-neutral-900 sm:min-h-screen">
         <BackgroundLinesHero />

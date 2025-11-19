@@ -65,6 +65,35 @@ export function TestArkivButton() {
     }
   }
 
+  async function handleDeleteDatabase() {
+    const confirmed = confirm(
+      "Are you sure you want to delete the entire Arkiv database? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+
+    console.log("Deleting Arkiv database...");
+
+    try {
+      const response = await fetch("/api/arkiv", {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      console.log("🗑️ DELETE ARKIV DATABASE RESPONSE");
+      console.log(JSON.stringify(data, null, 2));
+
+      if (data.success) {
+        console.log("✅ Arkiv database deleted successfully!");
+        console.log(`Deleted ${data.deletedEntries} entries`);
+      } else {
+        console.error("❌ Error:", data.error);
+      }
+    } catch (error) {
+      console.error("❌ Failed to delete Arkiv database:", error);
+    }
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
       <button
@@ -78,6 +107,12 @@ export function TestArkivButton() {
         className="rounded-full bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
       >
         Get Database
+      </button>
+      <button
+        onClick={handleDeleteDatabase}
+        className="rounded-full bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600"
+      >
+        Delete Database
       </button>
     </div>
   );

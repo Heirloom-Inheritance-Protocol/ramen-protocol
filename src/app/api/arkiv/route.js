@@ -248,3 +248,32 @@ export async function GET(request) {
     );
   }
 }
+
+export async function DELETE() {
+  try {
+    const assetsDatabase = getDatabase();
+    const entriesCount = assetsDatabase.length;
+
+    console.log("🗑️ DELETE REQUEST - Clearing entire Arkiv database");
+    console.log(`Entries to delete: ${entriesCount}`);
+
+    // Clear the database
+    assetsDatabase.length = 0;
+    globalThis.arkivAssetsDatabase = [];
+
+    console.log("✅ Arkiv database cleared successfully");
+    console.log(`Deleted ${entriesCount} entries`);
+
+    return NextResponse.json({
+      success: true,
+      message: "Arkiv database cleared successfully",
+      deletedEntries: entriesCount,
+    });
+  } catch (error) {
+    console.error("Error deleting Arkiv database:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to delete database" },
+      { status: 500 },
+    );
+  }
+}
