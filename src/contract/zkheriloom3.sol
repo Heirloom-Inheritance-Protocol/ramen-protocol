@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {ISemaphore} from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
 import {ISemaphoreGroups} from "@semaphore-protocol/contracts/interfaces/ISemaphoreGroups.sol";
 
-contract zkHeriloom3 {
+contract ZkHeriloom3 {
     // semaphore scroll sepolia address:0x8A1fd199516489B0Fb7153EB5f075cDAC83c693D
     ISemaphore public semaphore;
     uint256 public groupCounter;
@@ -47,15 +47,11 @@ contract zkHeriloom3 {
 
     //Only Admin Guard.
     modifier onlyAdmin() {
-        _onlyAdmin();
+        require(msg.sender == admin, "Only admin can call this function");
         _;
     }
-    
-    function _onlyAdmin() internal view {
-        require(msg.sender == admin, "Only admin can call this function");
-    }
 
-    event change_Admin(address _newAdmin);
+    event ChangeAdmin(address _newAdmin);
 
     event InheritanceCreated(
         uint256 indexed inheritanceId,
@@ -500,17 +496,17 @@ contract zkHeriloom3 {
     // function to update the contract admin.
     function changeAdmin(address _newAdmin) external onlyAdmin {
         admin = _newAdmin;
-        emit change_Admin(_newAdmin);
+        emit ChangeAdmin(_newAdmin);
     }
 
     /// @notice Initiates a vault admin update in Semaphore. Current vault admin must call this.
-    /// @dev Wraps Semaphore's updateGroupAdmin. The new admin must later call acceptGroupAdmin.
+    /// @dev Wraps Semaphore's updateGroupAdmin. The new admin must later call acceptVaultAdmin.
     function changeVaultAdmin(uint256 _vaultId, address _newAdmin) external {
         // Forward to Semaphore. Access control is enforced by Semaphore itself (caller must be current admin).
         semaphore.updateGroupAdmin(_vaultId, _newAdmin);
     }
 
-    function acceptGroupAdmin(uint256 _vaultId) external {
+    function acceptVaultAdmin(uint256 _vaultId) external {
         // call semaphore to accept the group admin role.
         semaphore.acceptGroupAdmin(_vaultId);
     }
@@ -520,7 +516,7 @@ contract zkHeriloom3 {
     /// @param _vaultId The vault id in Semaphore.
     /// @param _identityCommitment The identity commitment to check.
     /// @return True if the member exists, false otherwise.
-    function isGroupMember(
+    function isVaultMember(
         uint256 _vaultId,
         uint256 _identityCommitment
     ) external view returns (bool) {
