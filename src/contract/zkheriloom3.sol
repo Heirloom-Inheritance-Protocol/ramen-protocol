@@ -24,6 +24,12 @@ contract ZkHeriloom3 {
         uint256 generationLevel; // How many times it has been passed down
     }
 
+    // Mapping from user address to their database struct
+    mapping(address => UserDatabase) public userDatabase;
+
+    // Mapping from vault ID to array of user addresses in that vault
+    mapping(uint256 => address[]) public vaultUsers;
+
     // Mapping from inheritance ID to Inheritance struct
     mapping(uint256 => Inheritance) public inheritances;
 
@@ -45,9 +51,28 @@ contract ZkHeriloom3 {
     // vault IDs created in semaphore.
     uint256[] public vaultIds;
 
+    // Custom errors
+    error NotAdmin();
+    error InvalidSuccessorAddress();
+    error CannotSetSelfAsSuccessor();
+    error EmptyIpfsHash();
+    error EmptyTag();
+    error EmptyFileName();
+    error InheritanceNotActive();
+    error InheritanceAlreadyClaimed();
+    error OnlySuccessorCanClaim();
+    error OnlyOwnerOrSuccessorCanPassDown();
+    error OnlyOwnerCanRevoke();
+    error InheritanceAlreadyRevoked();
+    error CannotRevokeClaimedInheritance();
+    error OnlyOwnerCanUpdate();
+    error CannotUpdateClaimedInheritance();
+    error OnlyOwnerCanDelete();
+    error CannotDeleteClaimedInheritance();
+
     //Only Admin Guard.
     modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can call this function");
+        if (msg.sender != admin) revert NotAdmin();
         _;
     }
 
@@ -91,13 +116,6 @@ contract ZkHeriloom3 {
         uint256 generationLevel
     );
 
-    constructor(address _semaphoreAddress) {
-        semaphore = ISemaphore(_semaphoreAddress);
-        admin = msg.sender;
-        uint256 vaultId = semaphore.createGroup();
-        vaultIds.push(vaultId);
-    }
-
     /****** Functions to Manage Inheritances *****/
 
     /**
@@ -115,11 +133,20 @@ contract ZkHeriloom3 {
         string memory _fileName,
         uint256 _fileSize
     ) external returns (uint256) {
-        require(_successor != address(0), "Invalid successor address");
-        require(_successor != msg.sender, "Cannot set yourself as successor");
-        require(bytes(_ipfsHash).length > 0, "IPFS hash cannot be empty");
-        require(bytes(_tag).length > 0, "Tag cannot be empty");
-        require(bytes(_fileName).length > 0, "File name cannot be empty");
+        if (_successor == address(0)) revert InvalidSuccessorAddress();
+        if (_successor == msg.sender) revert CannotSetSelfAsSuccessor();
+        if (bytes(_ipfsHash).length == 0) revert EmptyIpfsHash();
+        if (bytes(_tag).length == 0) revert EmptyTag();
+        if (bytes(_fileName).length == 0) revert EmptyFileName();
+
+				uint256 vaultId = semaphore.createGroup();
+        vaultIds.push(vaultId);
+        userDatabase[msg.sender] = UserDatabase({
+            vaultID: vaultId,
+            index: 0,
+            identityCommitment: 0,
+            merkleTreeRoot: 0
+        });
 
         uint256 inheritanceId = inheritanceCounter++;
 
@@ -161,12 +188,9 @@ contract ZkHeriloom3 {
     function claimInheritance(uint256 _inheritanceId) external {
         Inheritance storage inheritance = inheritances[_inheritanceId];
 
-        require(inheritance.isActive, "Inheritance is not active");
-        require(!inheritance.isClaimed, "Inheritance already claimed");
-        require(
-            msg.sender == inheritance.successor,
-            "Only successor can claim"
-        );
+        if (!inheritance.isActive) revert InheritanceNotActive();
+        if (inheritance.isClaimed) revert InheritanceAlreadyClaimed();
+        if (msg.sender != inheritance.successor) revert OnlySuccessorCanClaim();
 
         inheritance.isClaimed = true;
         inheritance.owner = msg.sender; // Transfer ownership
@@ -185,17 +209,13 @@ contract ZkHeriloom3 {
     ) external returns (uint256) {
         Inheritance storage originalInheritance = inheritances[_inheritanceId];
 
-        require(originalInheritance.isActive, "Inheritance is not active");
-        require(
-            msg.sender == originalInheritance.owner ||
-                msg.sender == originalInheritance.successor,
-            "Only owner or successor can pass down"
-        );
-        require(_newSuccessor != address(0), "Invalid successor address");
-        require(
-            _newSuccessor != msg.sender,
-            "Cannot set yourself as successor"
-        );
+        if (!originalInheritance.isActive) revert InheritanceNotActive();
+        if (
+            msg.sender != originalInheritance.owner &&
+            msg.sender != originalInheritance.successor
+        ) revert OnlyOwnerOrSuccessorCanPassDown();
+        if (_newSuccessor == address(0)) revert InvalidSuccessorAddress();
+        if (_newSuccessor == msg.sender) revert CannotSetSelfAsSuccessor();
 
         // Create new inheritance record with same asset
         uint256 newInheritanceId = inheritanceCounter++;
@@ -248,9 +268,9 @@ contract ZkHeriloom3 {
     function revokeInheritance(uint256 _inheritanceId) external {
         Inheritance storage inheritance = inheritances[_inheritanceId];
 
-        require(msg.sender == inheritance.owner, "Only owner can revoke");
-        require(inheritance.isActive, "Inheritance already revoked");
-        require(!inheritance.isClaimed, "Cannot revoke claimed inheritance");
+        if (msg.sender != inheritance.owner) revert OnlyOwnerCanRevoke();
+        if (!inheritance.isActive) revert InheritanceAlreadyRevoked();
+        if (inheritance.isClaimed) revert CannotRevokeClaimedInheritance();
 
         inheritance.isActive = false;
 
@@ -268,14 +288,11 @@ contract ZkHeriloom3 {
     ) external {
         Inheritance storage inheritance = inheritances[_inheritanceId];
 
-        require(msg.sender == inheritance.owner, "Only owner can update");
-        require(inheritance.isActive, "Inheritance is not active");
-        require(!inheritance.isClaimed, "Cannot update claimed inheritance");
-        require(_newSuccessor != address(0), "Invalid successor address");
-        require(
-            _newSuccessor != msg.sender,
-            "Cannot set yourself as successor"
-        );
+        if (msg.sender != inheritance.owner) revert OnlyOwnerCanUpdate();
+        if (!inheritance.isActive) revert InheritanceNotActive();
+        if (inheritance.isClaimed) revert CannotUpdateClaimedInheritance();
+        if (_newSuccessor == address(0)) revert InvalidSuccessorAddress();
+        if (_newSuccessor == msg.sender) revert CannotSetSelfAsSuccessor();
 
         address oldSuccessor = inheritance.successor;
         inheritance.successor = _newSuccessor;
@@ -293,8 +310,8 @@ contract ZkHeriloom3 {
     function deleteInheritance(uint256 _inheritanceId) external {
         Inheritance storage inheritance = inheritances[_inheritanceId];
 
-        require(msg.sender == inheritance.owner, "Only owner can delete");
-        require(!inheritance.isClaimed, "Cannot delete claimed inheritance");
+        if (msg.sender != inheritance.owner) revert OnlyOwnerCanDelete();
+        if (inheritance.isClaimed) revert CannotDeleteClaimedInheritance();
 
         // Mark as deleted by setting all fields to zero/false
         delete inheritances[_inheritanceId];
@@ -528,4 +545,12 @@ contract ZkHeriloom3 {
                 _identityCommitment
             );
     }
+
+	function getUserPositionInDatabase(address _user) external view returns (uint256) {
+		return userDatabase[_user].index;
+	}
+
+	function getAllUsersFromVault(uint256 _vaultId) external view returns (address[] memory) {
+		return vaultUsers[_vaultId];
+	}
 }
