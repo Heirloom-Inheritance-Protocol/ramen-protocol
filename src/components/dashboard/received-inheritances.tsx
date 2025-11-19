@@ -11,6 +11,7 @@ import {
 } from "@/lib/services/heriloomProtocol";
 import { decryptFileForBoth } from "@/lib/encryption";
 import { isAddress } from "viem";
+import IdentityCreation from "../IdentityCreation";
 
 export function ReceivedInheritances(): JSX.Element {
   const { user } = usePrivy();
@@ -29,6 +30,43 @@ export function ReceivedInheritances(): JSX.Element {
   const [showReinheritModal, setShowReinheritModal] = useState(false);
   const [newSuccessorAddress, setNewSuccessorAddress] = useState("");
   const [reinheritingLoading, setReinheritingLoading] = useState(false);
+  const [hasIdentity, setHasIdentity] = useState(false);
+
+  // Check for identity in localStorage
+  useEffect(() => {
+    const checkIdentity = () => {
+      if (typeof window !== "undefined") {
+        const commitment = localStorage.getItem("semaphoreCommitment");
+        setHasIdentity(!!commitment);
+      }
+    };
+
+    checkIdentity();
+
+    // Listen for storage changes (when identity is created in another tab/window)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "semaphoreCommitment") {
+        checkIdentity();
+      }
+    };
+
+    // Listen for custom event (when identity is created in same window)
+    const handleIdentityCreated = () => {
+      checkIdentity();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("identityCreated", handleIdentityCreated);
+
+    // Also check periodically as a fallback
+    const interval = setInterval(checkIdentity, 1000);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("identityCreated", handleIdentityCreated);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Fetch inheritances from blockchain
   useEffect(() => {
@@ -744,6 +782,8 @@ export function ReceivedInheritances(): JSX.Element {
                 : "You haven't been designated as a beneficiary for any inheritances yet."}
             </p>
           </div>
+        ) : !hasIdentity ? (
+          <IdentityCreation />
         ) : (
           <div className="overflow-x-auto md:overflow-hidden rounded-xl border border-white/20 bg-white/90 shadow-lg backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
             <div>
