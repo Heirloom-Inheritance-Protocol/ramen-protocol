@@ -141,7 +141,7 @@ export function InheritanceForm({
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Upload failed:", errorData);
-        throw new Error(`Upload failed: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`Upload failed: ${errorData.error || "Unknown error"}`);
       }
 
       const data = await response.json();
@@ -171,9 +171,12 @@ export function InheritanceForm({
         data.hash, // ipfsHash
         selectedTag, // tag
         selectedFile.name, // fileName
-        selectedFile.size // fileSize
+        selectedFile.size, // fileSize
       );
-      console.log("✅ Inheritance created with ID:", inheritanceResult.inheritanceId);
+      console.log(
+        "✅ Inheritance created with ID:",
+        inheritanceResult.inheritanceId,
+      );
       console.log("✅ Vault ID:", inheritanceResult.vaultId);
 
       const inheritanceId = BigInt(inheritanceResult.inheritanceId);
@@ -462,7 +465,7 @@ export function InheritanceForm({
                         {inheritance.fileName}
                       </p>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                        Successor: {inheritance.successor}
+                        Successor: {inheritance.successorCommitment}
                       </p>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300">
                         Tag: {inheritance.tag}

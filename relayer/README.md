@@ -47,6 +47,23 @@ Production mode:
 npm start
 ```
 
+## Deploying to Vercel
+
+For detailed instructions on deploying to Vercel and configuring environment variables, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md).
+
+**Quick Setup:**
+1. Push code to GitHub/GitLab/Bitbucket
+2. Import project in Vercel Dashboard (set root directory to `relayer`)
+3. Add environment variables in Vercel:
+   - `PRIVATE_KEY` (required)
+   - `RPC_URL` (required)
+   - `MONGODB_URI` (required)
+   - `FRONTEND_URL` (optional, for CORS)
+   - `HERILOOM_CONTRACT_ADDRESS` (optional, has default)
+4. Deploy!
+
+**Note:** Make sure to run `forge build` before deploying so the contract ABI files are available.
+
 ## API Endpoints
 
 ### Health Check
