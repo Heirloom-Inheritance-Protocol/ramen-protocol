@@ -7,8 +7,6 @@ import { FloatingNav } from "@/components/ui/floating-navbar";
 import { ScrollIndicator } from "@/components/ui/scroll-indicator";
 import { WobbleCardDemo } from "@/components/ui/wobble-card-demo";
 import { Card } from "@/components/ui/card";
-import { TestArkivButton } from "@/components/ui/test-arkiv-button";
-import { TestMerkleTreeButton } from "@/components/ui/test-merkle-tree-button";
 import { MAIN_NAV_ITEMS } from "@/lib/navigation";
 
 interface FooterLink {
@@ -72,7 +70,7 @@ function Footer() {
     <footer className="bg-neutral-900 text-neutral-200">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-12 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-lg font-semibold">Heritage Inheritance Protocol</p>
+          <p className="text-lg font-semibold">Ramen Protocol</p>
           <p className="mt-2 text-sm text-neutral-400">
             Preserving legacies with encrypted, on-chain stewardship.
           </p>
@@ -101,8 +99,6 @@ function Footer() {
 export default function Home() {
   return (
     <>
-      <TestArkivButton />
-      <TestMerkleTreeButton />
       <FloatingNav navItems={MAIN_NAV_ITEMS} />
       <div className="relative bg-white dark:bg-neutral-900 sm:min-h-screen">
         <BackgroundLinesHero />
