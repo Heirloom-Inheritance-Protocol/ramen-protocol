@@ -1,32 +1,9 @@
 "use client";
-import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
-import { usePathname, useRouter } from "next/navigation";
-import React, { JSX, useEffect, useRef } from "react";
+import { PrivyProvider } from "@privy-io/react-auth";
+import React from "react";
 
 interface RootProviderProps {
   children: React.ReactNode;
-}
-
-interface AuthRedirectProps {
-  children: React.ReactNode;
-}
-
-function AuthRedirect({ children }: AuthRedirectProps): JSX.Element {
-  const { ready, authenticated } = usePrivy();
-  const router = useRouter();
-  const pathname = usePathname();
-  const hasRedirectedRef = useRef(false);
-
-  useEffect(() => {
-    if (!ready || !authenticated) return;
-    if (hasRedirectedRef.current) return;
-    if (pathname === "/inherit") return;
-
-    hasRedirectedRef.current = true;
-    router.push("/inherit");
-  }, [ready, authenticated, pathname, router]);
-
-  return <>{children}</>;
 }
 
 export default function RootProvider({ children }: RootProviderProps) {
@@ -51,7 +28,7 @@ export default function RootProvider({ children }: RootProviderProps) {
         },
       }}
     >
-      <AuthRedirect>{children}</AuthRedirect>
+      {children}
     </PrivyProvider>
   );
 }
