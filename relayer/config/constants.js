@@ -4,7 +4,8 @@
 // Semaphore contract address on Scroll Sepolia
 export const SEMAPHORE_CONTRACT_ADDRESS = "0x8A1fd199516489B0Fb7153EB5f075cDAC83c693D";
 
-// ZkHeriloom3 contract address (update after deployment)
-// This should be set via environment variable or updated after deployment
-export const HERILOOM_CONTRACT_ADDRESS = process.env.HERILOOM_CONTRACT_ADDRESS || "0x0fD193e242e3DEa37eC39DA40440431828A10C17";
+// ZkHeriloom3 contract address - Deployed on Scroll Sepolia
+// Deployed at: 0xe46c683691ad993133cde2a0cc19ccae724fe93d
+// Can be overridden via environment variable
+export const HERILOOM_CONTRACT_ADDRESS = process.env.HERILOOM_CONTRACT_ADDRESS || "0xe46c683691ad993133cde2a0cc19ccae724fe93d";
 

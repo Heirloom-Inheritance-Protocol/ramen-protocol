@@ -78,7 +78,7 @@ router.post("/", async (req, res) => {
 
         // Parse GroupCreated event to get the vault ID
         const { Interface } = await import("ethers");
-        const GroupCreatedEventAbi = "event GroupCreated(uint256 indexed groupId, address indexed admin)";
+        const GroupCreatedEventAbi = "event GroupCreated(uint256 indexed groupId)";
         const iface = new Interface([GroupCreatedEventAbi]);
         
         let vaultId = null;

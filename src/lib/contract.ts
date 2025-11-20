@@ -1,4 +1,8 @@
-export const CONTRACT_ADDRESS = "0x0fD193e242e3DEa37eC39DA40440431828A10C17";
+// ZkHeriloom3 contract address - Deployed on Scroll Sepolia
+// Deployed at: 0xe46c683691ad993133cde2a0cc19ccae724fe93d
+export const CONTRACT_ADDRESS = 
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_CONTRACT_ADDRESS) ||
+  "0xe46c683691ad993133cde2a0cc19ccae724fe93d";
 
 export const CONTRACT_ABI = [
   {

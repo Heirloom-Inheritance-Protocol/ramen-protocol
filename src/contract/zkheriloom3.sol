@@ -10,6 +10,11 @@ contract ZkHeriloom3 {
     uint256 public groupCounter;
     address public admin;
 
+    constructor(address _semaphoreAddress) {
+        semaphore = ISemaphore(_semaphoreAddress);
+        admin = msg.sender;
+    }
+
     struct Inheritance {
         address owner;
         address successor;

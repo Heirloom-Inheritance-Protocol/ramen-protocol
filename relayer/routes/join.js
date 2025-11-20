@@ -264,46 +264,15 @@ router.post("/", async (req, res) => {
                     const collection = database.collection("Commitments");
 
                     const document = {
-                        groupId: selectedGroupId,
-                        identityCommitment: identityCommitment, 
-                        transactionHash: receipt.hash,
-                        blockNumber: receipt.blockNumber,
-                        merkleTreeData: {
-                            index: eventData.index, 
-                            identityCommitment: eventData.identityCommitment,   
-                            merkleTreeRoot: eventData.merkleTreeRoot 
-                        },
+                        vaultId: selectedGroupId,
+                        index: eventData.index, 
+                        identityCommitment: eventData.identityCommitment,   
+                        merkleTreeRoot: eventData.merkleTreeRoot,
                         timestamp: new Date(),
                     };
 
-                    console.log("🔵 Inserting document into MongoDB...");
                     const result = await collection.insertOne(document);
-                    console.log("✅ Document inserted with _id:", result.insertedId);
-
-                } catch (mongoError) {
-                    console.error("❌ MongoDB error:");
-                    console.error("   Error message:", mongoError.message);
-                    console.error("   Error stack:", mongoError.stack);
-                    console.error("   Error name:", mongoError.name);
-                    console.error("   Error code:", mongoError.code);
-                    
-                    // Provide helpful diagnostic information
-                    if (mongoError.message?.includes("SSL") || mongoError.message?.includes("TLS") || 
-                        mongoError.message?.includes("alert")) {
-                        console.error("   🔍 SSL/TLS Error detected. Common causes:");
-                        console.error("      - IP address not whitelisted on MongoDB Atlas");
-                        console.error("      - Invalid or malformed connection string");
-                        console.error("      - Network/firewall blocking TLS connection");
-                        console.error("      - Node.js TLS version incompatibility");
-                    } else if (mongoError.name === "MongoServerSelectionError" || 
-                               mongoError.code === "ENOTFOUND") {
-                        console.error("   🔍 Connection Error detected. Common causes:");
-                        console.error("      - MongoDB instance is down or unreachable");
-                        console.error("      - IP address not whitelisted on MongoDB Atlas");
-                        console.error("      - Invalid connection string hostname");
-                        console.error("      - Network connectivity issues");
-                    }
-                    
+                    console.log("✅ User added to vault:", result.insertedId);
                 } finally {
                     if (mongoClient) {
                         try {

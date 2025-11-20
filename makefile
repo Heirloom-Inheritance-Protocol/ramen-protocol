@@ -10,7 +10,7 @@ SCROLL_SEPOLIA_ARGS := --rpc-url $(RPC_URL_SCROLL_SEPOLIA) \
                        --account $(DEPLOY_KEY) \
                        --broadcast \
                        --verify \
-                       --verifier-url https://api-sepolia.scrollscan.com/api \
+                       --verifier-url https://api-sepolia.scrollscan.com/api/v2 \
                        --verifier blockscout \
                        --etherscan-api-key $(SCROLLSCAN_API_KEY) \
                        --via-ir

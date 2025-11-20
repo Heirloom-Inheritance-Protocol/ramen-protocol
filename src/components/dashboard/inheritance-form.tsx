@@ -9,9 +9,11 @@ import {
   createInheritance,
   getOwnerInheritances,
   InheritanceData,
+  generateCommitmentFromWallet,
 } from "@/lib/services/heriloomProtocol";
 import { encryptFileForBoth } from "@/lib/encryption";
 import { CreateInheritanceButton } from "@/components/CreateGroup";
+import { createVault, addMemberToVault } from "@/services/relayerAPI";
 
 interface InheritanceFormProps {
   className?: string;
@@ -143,7 +145,33 @@ export function InheritanceForm({
 
       console.log("Encrypted file uploaded to IPFS:", data);
 
-      // Create inheritance on blockchain
+      // 3. Create vault (group) for this inheritance
+      console.log("Creating vault for inheritance...");
+      const vaultResult = await createVault();
+      const vaultId = vaultResult.vaultId;
+      console.log("✅ Vault created with ID:", vaultId);
+
+      // 4. Generate commitment hash from owner (creator) wallet address
+      console.log("Generating commitment hash from owner wallet:", user.wallet.address);
+      const ownerCommitment = generateCommitmentFromWallet(user.wallet.address);
+      console.log("✅ Owner commitment generated:", ownerCommitment);
+
+      // 5. Add owner (creator) as first member to vault
+      console.log(`Adding owner as first member to vault ${vaultId}...`);
+      await addMemberToVault(ownerCommitment, Number(vaultId));
+      console.log("✅ Owner added to vault as first member");
+
+      // 6. Generate commitment hash from successor wallet address
+      console.log("Generating commitment hash from successor wallet:", successorWallet);
+      const successorCommitment = generateCommitmentFromWallet(successorWallet);
+      console.log("✅ Successor commitment generated:", successorCommitment);
+
+      // 7. Add successor as second member to vault
+      console.log(`Adding successor as second member to vault ${vaultId}...`);
+      await addMemberToVault(successorCommitment, Number(vaultId));
+      console.log("✅ Successor added to vault");
+
+      // 6. Create inheritance on blockchain
       setUploadingStage("blockchain");
       console.log("Creating inheritance on blockchain...");
       const inheritanceId = await createInheritance({

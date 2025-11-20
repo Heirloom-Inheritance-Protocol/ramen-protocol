@@ -137,10 +137,24 @@ router.post("/", async (req, res) => {
 
         // Execute transaction
         console.log("🔵 Executing transaction to add member...");
-        console.log("   Calling contract.addMember(", vaultId, ",", identityCommitment, ")...");
+        console.log("   Calling semaphore.addMember(", vaultId, ",", identityCommitment, ") directly...");
 
         try {
-            const transaction = await contract.addMember(vaultId, identityCommitment);
+            // Call Semaphore directly since the relayer is the group admin
+            const semaphoreAddMemberABI = [
+                {
+                    inputs: [
+                        {name: "groupId", type: "uint256"},
+                        {name: "identityCommitment", type: "uint256"}
+                    ],
+                    name: "addMember",
+                    outputs: [],
+                    stateMutability: "nonpayable",
+                    type: "function",
+                },
+            ];
+            const semaphoreContract = new Contract(SEMAPHORE_CONTRACT_ADDRESS, semaphoreAddMemberABI, signer);
+            const transaction = await semaphoreContract.addMember(vaultId, identityCommitment);
             console.log("✅ Transaction sent successfully");
             console.log("   Transaction hash:", transaction.hash);
             console.log("   Waiting for confirmation...");
