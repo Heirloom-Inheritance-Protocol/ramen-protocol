@@ -175,7 +175,13 @@ export function ReceivedInheritances(): JSX.Element {
   }
 
   function formatSize(bytes: bigint): string {
-    return `${(Number(bytes) / 1024 / 1024).toFixed(1)} MB`;
+    const bytesNum = Number(bytes);
+    const mb = bytesNum / 1024 / 1024;
+    if (mb < 1) {
+      const kb = bytesNum / 1024;
+      return `${kb.toFixed(1)} KB`;
+    }
+    return `${mb.toFixed(1)} MB`;
   }
 
   function shortenAddress(address: string): string {

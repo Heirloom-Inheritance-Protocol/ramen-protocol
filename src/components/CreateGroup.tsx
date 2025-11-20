@@ -21,7 +21,7 @@ export function CreateInheritanceButton({
   const getButtonText = () => {
     switch (uploadingStage) {
       case "ipfs":
-        return "Uploading to IPFS...";
+        return "Uploading to ARKIV...";
       case "blockchain":
         return "Creating on Blockchain...";
       default:
