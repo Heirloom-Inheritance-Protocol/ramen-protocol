@@ -8,6 +8,8 @@ A decentralized protocol for preserving and passing down cultural assets and sec
 
 Ramen Protocol enables individuals to securely inherit sensitive knowledge to chosen successors while maintaining privacy through encryption and creating permanent, verifiable records of cultural lineage on-chain.
 
+<img width="1219" height="863" alt="image" src="https://github.com/user-attachments/assets/3798ccc6-9be8-4b3c-be7a-3a5b051610cf" />
+
 ---
 
 ## 📺 Important Links
@@ -164,6 +166,9 @@ User → Frontend (Next.js) → Smart Contract (zkheriloom3) → Semaphore Proto
 
 <img width="814" height="780" alt="image" src="https://github.com/user-attachments/assets/37d357ec-621d-46ea-9807-c7f92191c971" />
 
+<img width="1697" height="905" alt="Screenshot 2025-11-20 at 15 40 04" src="https://github.com/user-attachments/assets/21458ecc-343a-406f-ad6b-f3f87baa33ff" />
+
+
 **1-0. Connect Wallet**  
 Connect your wallet to the app.  
 Non-crypto users can also generate a wallet easily using just an email address.
@@ -192,7 +197,9 @@ Uploaded inheritance entries can always be accessed and searched under the **Vau
 
 ### 2. Receiving an Inheritance (Successor)
 
-<img width="1063" height="894" alt="image" src="https://github.com/user-attachments/assets/8daa2466-e67e-41a6-a616-7ccb6ad166ad" />
+
+<img width="1720" height="955" alt="Screenshot 2025-11-20 at 15 46 50" src="https://github.com/user-attachments/assets/1f478320-5e22-48bf-abf7-ca31fda624a1" />
+
 
 **2-0. Connect Wallet**  
 The chosen successor connects using the **same wallet address** registered by the originator.
