@@ -1,7 +1,6 @@
 # Secret-Knowledge-Inheritance-Protocol
 
-
-### Short concept: A tool that allows people who wish to preserve cultural assets or secret knowledge to securely and permanently pass them down to others across generations.
+ Short concept: A tool that allows people who wish to preserve cultural assets or secret knowledge to securely and permanently pass them down to others across generations.
 
 ---
 
