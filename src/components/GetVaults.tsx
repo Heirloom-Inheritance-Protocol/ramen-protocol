@@ -5,6 +5,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import { Identity } from "@semaphore-protocol/identity";
 import { getVaults, checkMember } from "@/services/relayerAPI";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Vault {
   vaultId: string;
@@ -104,7 +111,7 @@ export default function GetVaults({
     ? vaults.filter((v) => v.isMember === true)
     : vaults;
 
-  const handleVaultClick = (vaultId: string) => {
+  const handleVaultSelect = (vaultId: string) => {
     if (allowSelection) {
       setSelectedVaultId(vaultId);
     }
@@ -128,7 +135,7 @@ export default function GetVaults({
     return (
       <div className={cn("rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm dark:bg-red-900/20 dark:border-red-800", className)}>
         <div className="flex items-start gap-3">
-          <svg className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
@@ -164,7 +171,7 @@ export default function GetVaults({
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          Vaults
+          Select Vault
         </h3>
         <div className="flex items-center gap-3">
           <span className="text-xs text-neutral-600 dark:text-neutral-400">
@@ -201,57 +208,47 @@ export default function GetVaults({
         </button>
       </div>
 
-      <div className="space-y-2">
-        {displayVaults.map((vault) => (
-          <div
-            key={vault.vaultId}
-            className={cn(
-              "rounded-lg border bg-white p-4 shadow-sm transition dark:bg-white/10 dark:border-neutral-600",
-              (allowSelection || onVaultSelected) && "cursor-pointer hover:border-blue-300 hover:shadow-md dark:hover:border-blue-600",
-              selectedVaultId === vault.vaultId && "border-blue-500 ring-2 ring-blue-200 dark:border-blue-400 dark:ring-blue-900/50"
-            )}
-            onClick={() => handleVaultClick(vault.vaultId)}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                  <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      {/* Dropdown menu for vault selection */}
+      <Select
+        value={selectedVaultId || undefined}
+        onValueChange={handleVaultSelect}
+        disabled={!allowSelection && !onVaultSelected}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select a vault..." />
+        </SelectTrigger>
+        <SelectContent>
+          {displayVaults.map((vault) => (
+            <SelectItem key={vault.vaultId} value={vault.vaultId} className="cursor-pointer">
+              <div className="flex items-center justify-between w-full gap-3 pr-4">
+                <div className="flex items-center gap-2 min-w-0">
+                  <svg className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
+                  <span className="font-medium">Vault #{vault.vaultId}</span>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400 shrink-0">
+                    (Index: {vault.index})
+                  </span>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                    Vault #{vault.vaultId}
-                  </p>
-                  <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                    Index: {vault.index}
-                  </p>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {vault.isLoading ? (
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-600 dark:border-t-white" />
+                  ) : vault.isMember ? (
+                    <div className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 dark:bg-green-900/30">
+                      <svg className="h-3 w-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-xs font-medium text-green-700 dark:text-green-300">Member</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">Not a member</span>
+                  )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-2">
-                {vault.isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-600 dark:border-t-white" />
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">Checking...</span>
-                  </div>
-                ) : vault.isMember ? (
-                  <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 dark:bg-green-900/30">
-                    <svg className="h-3.5 w-3.5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-xs font-medium text-green-700 dark:text-green-300">Member</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-1 dark:bg-neutral-800">
-                    <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Not a member</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
