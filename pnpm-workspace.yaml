@@ -1,0 +1,8 @@
+ignoredBuiltDependencies:
+  - '@reown/appkit'
+  - '@tsparticles/engine'
+  - bufferutil
+  - keccak
+  - sharp
+  - unrs-resolver
+  - utf-8-validate

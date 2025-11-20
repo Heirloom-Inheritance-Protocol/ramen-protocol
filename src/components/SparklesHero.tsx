@@ -6,7 +6,7 @@ export function SparklesHero() {
   return (
     <div className="h-screen w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
       <h1 className="md:text-7xl text-3xl lg:text-7xl font-bold text-center text-white relative z-20">
-        Heritage Inheritance Protocol
+        Ramen Protocol
       </h1>
       <div className="w-160 h-40 relative">
         {/* Gradients */}

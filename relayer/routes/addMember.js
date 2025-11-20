@@ -3,7 +3,6 @@ import {Contract, JsonRpcProvider, Wallet, Interface} from "ethers";
 import {readFileSync} from "fs";
 import {fileURLToPath} from "url";
 import {dirname, join} from "path";
-import {MongoClient} from "mongodb";
 import { SEMAPHORE_CONTRACT_ADDRESS, HERILOOM_CONTRACT_ADDRESS } from "../config/constants.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -188,52 +187,53 @@ router.post("/", async (req, res) => {
             }
             
             if (memberAddedEvent && eventData) {
-                // Store in MongoDB
-                let mongoClient;
+                // Store in Arkiv
                 try {
-                    console.log("🔵 Connecting to MongoDB...");
-                    const clientOptions = {
-                        connectTimeoutMS: 30000,
-                        serverSelectionTimeoutMS: 30000,
-                        retryWrites: true,
-                        retryReads: true,
-                    };
-                    
-                    mongoClient = new MongoClient(process.env.MONGODB_URI, clientOptions);
-                    await mongoClient.connect();
-                    console.log("✅ MongoDB client connected");
+                    console.log("🔵 Storing vault member data in Arkiv...");
 
-                    const database = mongoClient.db("HERILOOM");
-                    const collection = database.collection("Commitments");
-
-                    const document = {
+                    const arkivPayload = JSON.stringify({
                         vaultId: Number(vaultId),
-                        identityCommitment: identityCommitment, 
+                        identityCommitment: identityCommitment.toString(),
                         transactionHash: receipt.hash,
                         blockNumber: receipt.blockNumber,
                         merkleTreeData: {
-                            index: eventData.index, 
-                            identityCommitment: eventData.identityCommitment,   
-                            merkleTreeRoot: eventData.merkleTreeRoot 
+                            index: eventData.index,
+                            identityCommitment: eventData.identityCommitment,
+                            merkleTreeRoot: eventData.merkleTreeRoot
                         },
-                        timestamp: new Date(),
-                    };
+                        timestamp: new Date().toISOString(),
+                    });
 
-                    console.log("🔵 Inserting document into MongoDB...");
-                    const result = await collection.insertOne(document);
-                    console.log("✅ Document inserted with _id:", result.insertedId);
+                    // Call the Arkiv API endpoint
+                    const arkivApiUrl = process.env.ARKIV_API_URL || "http://localhost:3000/api/arkiv";
+                    const arkivResponse = await fetch(arkivApiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            payload: arkivPayload,
+                            contentType: "application/json",
+                            attributes: [
+                                { key: "type", value: "vault-member" },
+                                { key: "vaultId", value: vaultId.toString() },
+                                { key: "identityCommitment", value: identityCommitment.toString() },
+                            ],
+                            expiresIn: 86400 * 365, // 1 year expiration
+                        }),
+                    });
 
-                } catch (mongoError) {
-                    console.error("❌ MongoDB error:", mongoError.message);
-                } finally {
-                    if (mongoClient) {
-                        try {
-                            await mongoClient.close();
-                            console.log("✅ MongoDB connection closed");
-                        } catch (closeError) {
-                            console.warn("⚠️  Error closing MongoDB connection:", closeError.message);
-                        }
+                    if (arkivResponse.ok) {
+                        const arkivData = await arkivResponse.json();
+                        console.log("✅ Vault member data stored in Arkiv");
+                        console.log("   Entity Key:", arkivData.entityKey);
+                        console.log("   Transaction Hash:", arkivData.txHash);
+                    } else {
+                        console.warn("⚠️  Failed to store in Arkiv, but member was added on-chain");
                     }
+                } catch (arkivError) {
+                    console.error("❌ Arkiv storage error:", arkivError.message);
+                    console.warn("⚠️  Member was added on-chain, but Arkiv storage failed");
                 }
             } else {
                 console.warn("⚠️  MemberAdded event not found in transaction logs");

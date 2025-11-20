@@ -21,7 +21,7 @@ export function BackgroundLinesHero() {
     <BackgroundLines className="w-full px-4 pb-8 pt-[calc(env(safe-area-inset-top)+4.5rem)] sm:pb-16 sm:pt-24 lg:py-32">
       <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-5 text-center">
         <TextGenerateEffect
-          words="Heritage Inheritance Protocol."
+          words="Ramen Protocol."
           className="w-full text-3xl leading-tight md:text-5xl lg:text-6xl"
         />
         <p className="text-base text-neutral-700 dark:text-neutral-400 md:text-lg">

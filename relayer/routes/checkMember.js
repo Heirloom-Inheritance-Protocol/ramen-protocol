@@ -3,7 +3,6 @@ import { Contract, JsonRpcProvider } from 'ethers';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { MongoClient } from 'mongodb';
 import { HERILOOM_CONTRACT_ADDRESS } from '../config/constants.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,7 +11,7 @@ const __dirname = dirname(__filename);
 const router = express.Router();
 
 // Load contract ABI
-const abiPath = join(__dirname, '../../out/zkheriloom3.sol/zkHeriloom3.json');
+const abiPath = join(__dirname, '../../out/zkheriloom3.sol/ZkHeriloom3.json');
 let HeriloomArtifact;
 try {
   HeriloomArtifact = JSON.parse(readFileSync(abiPath, 'utf8'));
@@ -22,8 +21,6 @@ try {
 }
 
 router.get('/', async (req, res) => {
-  let mongoClient;
-
   try {
     const { identityCommitment, vaultId } = req.query;
 
@@ -42,70 +39,69 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Check MongoDB database (single source of truth)
+    // Check Arkiv database first
     try {
-      const clientOptions = {
-        connectTimeoutMS: 30000,
-        serverSelectionTimeoutMS: 30000,
-        retryWrites: true,
-        retryReads: true,
-      };
+      console.log('🔵 Checking Arkiv for vault member...');
+      const arkivApiUrl = process.env.ARKIV_API_URL || "http://localhost:3000/api/arkiv";
+      const arkivResponse = await fetch(`${arkivApiUrl}?database=true`);
 
-      mongoClient = new MongoClient(process.env.MONGODB_URI, clientOptions);
-      await mongoClient.connect();
+      if (arkivResponse.ok) {
+        const arkivData = await arkivResponse.json();
+        const members = arkivData.database || [];
 
-      const database = mongoClient.db('HERILOOM');
-      const collection = database.collection('Commitments');
+        // Find member with matching vaultId and identityCommitment
+        const member = members.find(entry =>
+          entry.type === 'vault-member' &&
+          entry.vaultId === parseInt(vaultId) &&
+          entry.identityCommitment === identityCommitment.toString()
+        );
 
-      // Query for the specific identityCommitment in the vault
-      const document = await collection.findOne({
-        vaultId: parseInt(vaultId),
-        identityCommitment: identityCommitment
-      });
-
-      const isMemberInDB = !!document;
-
-      return res.status(200).json({
-        success: true,
-        isMember: isMemberInDB,
-        vaultId: vaultId,
-        identityCommitment: identityCommitment,
-        source: 'database',
-        transactionHash: document?.transactionHash || null
-      });
-
-    } catch (mongoError) {
-      console.error('❌ MongoDB error:', mongoError.message);
-
-      // If MongoDB fails, fall back to blockchain check
-      console.log('⚠️ Falling back to blockchain verification...');
-
-      // Validate that the ABI is loaded
-      if (!HeriloomArtifact || !HeriloomArtifact.abi) {
-        return res.status(500).json({
-          error: 'Database unavailable and contract ABI not loaded',
-          details: 'Cannot verify membership'
-        });
+        if (member) {
+          console.log('✅ Member found in Arkiv');
+          return res.status(200).json({
+            success: true,
+            isMember: true,
+            vaultId: vaultId,
+            identityCommitment: identityCommitment,
+            source: 'arkiv',
+            transactionHash: member.transactionHash || null
+          });
+        } else {
+          console.log('⚠️  Member not found in Arkiv, checking blockchain...');
+        }
+      } else {
+        console.warn('⚠️  Arkiv query failed, falling back to blockchain...');
       }
+    } catch (arkivError) {
+      console.error('❌ Arkiv error:', arkivError.message);
+      console.log('⚠️ Falling back to blockchain verification...');
+    }
 
-      const provider = new JsonRpcProvider(process.env.RPC_URL);
-      const contract = new Contract(
-        HERILOOM_CONTRACT_ADDRESS,
-        HeriloomArtifact.abi,
-        provider
-      );
-
-      const isMember = await contract.isVaultMember(vaultId, identityCommitment);
-
-      return res.status(200).json({
-        success: true,
-        isMember: isMember,
-        vaultId: vaultId,
-        identityCommitment: identityCommitment,
-        source: 'blockchain',
-        warning: 'Database unavailable, using blockchain as fallback'
+    // Fall back to blockchain check
+    if (!HeriloomArtifact || !HeriloomArtifact.abi) {
+      return res.status(500).json({
+        error: 'Arkiv unavailable and contract ABI not loaded',
+        details: 'Cannot verify membership'
       });
     }
+
+    const provider = new JsonRpcProvider(process.env.RPC_URL);
+    const contract = new Contract(
+      HERILOOM_CONTRACT_ADDRESS,
+      HeriloomArtifact.abi,
+      provider
+    );
+
+    const isMember = await contract.isVaultMember(vaultId, identityCommitment);
+
+    return res.status(200).json({
+      success: true,
+      isMember: isMember,
+      vaultId: vaultId,
+      identityCommitment: identityCommitment,
+      source: 'blockchain',
+      warning: 'Arkiv unavailable, using blockchain as source'
+    });
 
   } catch (error) {
     console.error('❌ Error in checkMember route:', error);
@@ -121,14 +117,6 @@ router.get('/', async (req, res) => {
       message: errorMessage,
       code: error.code
     });
-  } finally {
-    if (mongoClient) {
-      try {
-        await mongoClient.close();
-      } catch (closeError) {
-        console.warn('⚠️ Error closing MongoDB connection:', closeError.message);
-      }
-    }
   }
 });
 

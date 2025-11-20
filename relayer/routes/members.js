@@ -1,6 +1,5 @@
 import express from "express";
 import {Contract, JsonRpcProvider} from "ethers";
-import {getIdentityCommitmentsByGroup} from "../utils/mongodb.js";
 import { SEMAPHORE_CONTRACT_ADDRESS } from "../config/constants.js";
 
 const router = express.Router();
@@ -13,17 +12,36 @@ router.get("/:vaultId", async (req, res) => {
         const {vaultId} = req.params;
         const vaultIdNum = parseInt(vaultId);
 
-        console.log(`🔵 Fetching members for vault ${vaultId} from database...`);
+        console.log(`🔵 Fetching members for vault ${vaultId} from Arkiv...`);
 
-        // Use MongoDB as the single source of truth for members
+        // Use Arkiv as the single source of truth for members
         // Members are stored in chronological order when they join via /api/vault/add-member
         let members = [];
         try {
-            members = await getIdentityCommitmentsByGroup(vaultIdNum);
-            console.log(`✅ Retrieved ${members.length} members from database for vault ${vaultId}`);
-        } catch (dbError) {
-            console.error("❌ Error fetching members from database:", dbError.message);
-            // If database fails, return empty array - don't fail the entire request
+            const arkivApiUrl = process.env.ARKIV_API_URL || "http://localhost:3000/api/arkiv";
+            const arkivResponse = await fetch(`${arkivApiUrl}?database=true`);
+
+            if (arkivResponse.ok) {
+                const arkivData = await arkivResponse.json();
+                const allEntries = arkivData.database || [];
+
+                // Filter vault member entries for this specific vaultId
+                const vaultMembers = allEntries.filter(entry =>
+                    entry.type === 'vault-member' && entry.vaultId === vaultIdNum
+                );
+
+                // Sort by timestamp to maintain chronological order
+                members = vaultMembers
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                    .map(entry => entry.identityCommitment);
+
+                console.log(`✅ Retrieved ${members.length} members from Arkiv for vault ${vaultId}`);
+            } else {
+                console.warn('⚠️  Arkiv query failed, members list may be empty');
+            }
+        } catch (arkivError) {
+            console.error("❌ Error fetching members from Arkiv:", arkivError.message);
+            // If Arkiv fails, return empty array - don't fail the entire request
             // Vault metadata (root, depth, size) will still be returned from blockchain
             members = [];
         }
@@ -56,29 +74,42 @@ router.get("/:vaultId", async (req, res) => {
         ];
 
         const semaphoreContract = new Contract(SEMAPHORE_ADDRESS, semaphoreABI, provider);
-        const root = await semaphoreContract.getMerkleTreeRoot(vaultId);
-        const depth = await semaphoreContract.getMerkleTreeDepth(vaultId);
-        const size = await semaphoreContract.getMerkleTreeSize(vaultId);
 
-        console.log(`✅ Vault data fetched successfully`);
-        console.log(`   Root: ${root.toString()}`);
-        console.log(`   Depth: ${depth.toString()}`);
-        console.log(`   Size: ${size.toString()}`);
-        console.log(`   Members: ${members.length}`);
+        // Fetch vault metadata in parallel
+        const [merkleTreeRoot, merkleTreeDepth, merkleTreeSize] = await Promise.all([
+            semaphoreContract.getMerkleTreeRoot(vaultIdNum),
+            semaphoreContract.getMerkleTreeDepth(vaultIdNum),
+            semaphoreContract.getMerkleTreeSize(vaultIdNum),
+        ]);
+
+        console.log(`✅ Fetched vault metadata for vault ${vaultId}`);
+        console.log(`   Merkle Tree Root: ${merkleTreeRoot}`);
+        console.log(`   Merkle Tree Depth: ${merkleTreeDepth}`);
+        console.log(`   Merkle Tree Size: ${merkleTreeSize}`);
 
         return res.status(200).json({
-            vaultId: parseInt(vaultId),
-            root: root.toString(),
-            depth: depth.toString(),
-            size: size.toString(),
-            members: members.map((m) => m.toString()),
+            success: true,
+            vaultId: vaultIdNum,
+            members: members,
+            memberCount: members.length,
+            vaultMetadata: {
+                merkleTreeRoot: merkleTreeRoot.toString(),
+                merkleTreeDepth: Number(merkleTreeDepth),
+                merkleTreeSize: Number(merkleTreeSize),
+            },
         });
     } catch (error) {
-        console.error("❌ Error fetching members:", error);
+        console.error("❌ Error in members route:", error);
+
+        let errorMessage = error.message;
+        if (error.code === "CALL_EXCEPTION") {
+            errorMessage = "Smart contract call failed. Vault might not exist.";
+        }
 
         return res.status(500).json({
-            error: "Failed to fetch members",
-            message: error.message,
+            error: "Failed to fetch vault members",
+            message: errorMessage,
+            code: error.code,
         });
     }
 });

@@ -64,12 +64,12 @@ export const FloatingNav = ({
         }}
       >
         <span className="sm:hidden pointer-events-none absolute left-1/2 -translate-x-1/2 text-sm font-medium text-neutral-900 dark:text-neutral-50">
-          Heritage Inheritance Protocol
+          Ramen Protocol
         </span>
         <div className="flex items-center gap-3">
           <img src="/heritage-tr.png" alt="" className="h-12 w-12 shrink-0" />
           <span className="hidden text-sm font-medium text-neutral-900 dark:text-neutral-50 sm:block">
-            Heritage Inheritance Protocol
+            Ramen Protocol
           </span>
         </div>
         <nav className="hidden sm:flex items-center gap-4">

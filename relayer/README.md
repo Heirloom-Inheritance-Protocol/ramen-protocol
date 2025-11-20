@@ -1,6 +1,6 @@
 # Heritage Inheritance Relayer Server
 
-This is the backend relayer server that handles blockchain transactions for the Heritage Inheritance Protocol. It manages the private key and submits transactions to the ZkHeriloom3 smart contract on behalf of users, enabling gasless transactions for vault management and member operations.
+This is the backend relayer server that handles blockchain transactions for the Ramen Protocol. It manages the private key and submits transactions to the ZkHeriloom3 smart contract on behalf of users, enabling gasless transactions for vault management and member operations.
 
 ## Setup
 

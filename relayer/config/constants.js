@@ -1,4 +1,4 @@
-// Contract addresses for Heritage Inheritance Protocol
+// Contract addresses for Ramen Protocol
 // Scroll Sepolia network
 
 // Semaphore contract address on Scroll Sepolia

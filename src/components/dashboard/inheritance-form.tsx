@@ -462,7 +462,8 @@ export function InheritanceForm({
                         {inheritance.fileName}
                       </p>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300">
-                        Successor: {inheritance.successor}
+                        Successor commitment:{" "}
+                        {inheritance.successorCommitment.toString()}
                       </p>
                       <p className="text-xs text-neutral-600 dark:text-neutral-300">
                         Tag: {inheritance.tag}

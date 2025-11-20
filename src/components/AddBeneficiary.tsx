@@ -62,7 +62,10 @@ export default function AddBeneficiaryButton({
 
       // Handle reinherit mode
       if (mode === "reinherit" && inheritanceId !== null && inheritanceId !== undefined) {
-        const newInheritanceId = await reinherit(inheritanceId, trimmedAddress);
+        const newSuccessorIdentity = new Identity(trimmedAddress);
+        const newSuccessorCommitment = newSuccessorIdentity.commitment;
+
+        const newInheritanceId = await reinherit(inheritanceId, newSuccessorCommitment);
 
         // Call the callback if provided
         if (onBeneficiaryAdded) {

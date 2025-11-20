@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Heritage Inheritance Protocol",
-  description: "Heritage-Inheritance-Protocol",
+  title: "Ramen Protocol",
+  description: "Ramen-Protocol",
 };
 
 export default function RootLayout({
