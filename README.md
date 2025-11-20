@@ -35,8 +35,8 @@ Short concept: A tool that allows people who wish to preserve cultural assets or
 
 ## Problem / Motivation
 
-Currently, those who want to pass down their knowledge or skills have no choice but to share secret information directly — either orally or on paper.  
-There is no verifiable way to record _who passed it to whom_, which makes extinction of such knowledge a real risk.
+Currently, those who want to pass down their secret knowledge or skills have no choice but to share secret information directly — either orally or on paper.  
+There is no verifiable way to record _who passed it to whom_, which makes extinction of such valuable knowledge a real risk.
 
 Traditional craftsmanship is disappearing globally not only because knowledge is lost, but because the act of transmission is invisible to institutions and future generations.  
 Anchoring these successions on-chain — with auditable records and public funding mechanisms — makes cultural inheritance _visible_ and _preservable_.
@@ -49,10 +49,11 @@ Additional risks:
 ## Solution
 
 - Record _who (wallet)_ passed knowledge to _whom (wallet)_ on-chain, preserving lineage and provenance.
-- Encrypt content **client-side** so the knowledge itself remains private.
-- Store encrypted data on IPFS; only its hash (CID) is referenced on-chain.
-- Only the designated successor's wallet can derive the correct key to decrypt the content.
-- This enables preservation of private cultural assets without forcing public disclosure.
+- using ZK & client-side Encryption* so the knowledge itself remains private.
+- Store encrypted data on IPFS/Arkiv; only its hash (CID) is referenced on-chain.
+- Only the qualified/designated successor's wallet can derive the correct key to decrypt the content.
+- This enables preservation of private knowledge without forcing public disclosure.
+- make the inheritance & lineage & visible so that the revenue from the knowledge is fairly distributed according to each dependency
 
 ## Target Users
 
