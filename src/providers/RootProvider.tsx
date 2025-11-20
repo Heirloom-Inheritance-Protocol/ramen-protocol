@@ -1,6 +1,7 @@
 "use client";
 import { PrivyProvider } from "@privy-io/react-auth";
 import React from "react";
+import { VaultProvider } from "@/context/VaultContext";
 
 interface RootProviderProps {
   children: React.ReactNode;
@@ -28,7 +29,9 @@ export default function RootProvider({ children }: RootProviderProps) {
         },
       }}
     >
-      {children}
+      <VaultProvider>
+        {children}
+      </VaultProvider>
     </PrivyProvider>
   );
 }

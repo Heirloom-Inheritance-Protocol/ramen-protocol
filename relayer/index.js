@@ -7,6 +7,7 @@ import getVaultsRoute from './routes/getVaults.js';
 import membersRoute from './routes/members.js';
 import adminRoute from './routes/admin.js';
 import createVaultRoute from './routes/createVault.js';
+import passDownRoute from './routes/passDown.js';
 import { HERILOOM_CONTRACT_ADDRESS } from './config/constants.js';
 
 dotenv.config();
@@ -43,6 +44,7 @@ app.use((req, res, next) => {
 app.use('/api/vault/create', createVaultRoute);
 app.use('/api/vault/add-member', addMemberRoute);
 app.use('/api/vault/check-member', checkMemberRoute);
+app.use('/api/vault/pass-down', passDownRoute);
 app.use('/api/vaults', getVaultsRoute);
 app.use('/api/vault/members', membersRoute);
 app.use('/api/admin', adminRoute);
@@ -66,6 +68,7 @@ app.get('/', (req, res) => {
       createVault: '/api/vault/create',
       addMember: '/api/vault/add-member',
       checkMember: '/api/vault/check-member',
+      passDown: '/api/vault/pass-down',
       getVaults: '/api/vaults',
       getMembers: '/api/vault/members/:vaultId',
       admin: '/api/admin'

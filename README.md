@@ -6,9 +6,7 @@ Short concept: A tool that allows people who wish to preserve cultural assets or
 
 ### Repository / MVP / DEMO / Deck
 
-- **Product page:**
-
-- **Presentation Video:**
+- **Presentation Video:**　https://www.loom.com/share/08768e78bc7a4594a6a216b6ed8dac7d
 
 - **Deck / Presentation:** https://docs.google.com/presentation/d/1dZ1V8BSY7JjxjKgjzIl1uxYEoeBCLIvdFmhdvrNZLak/edit?usp=sharing
 
@@ -93,7 +91,7 @@ This also leaves traditions vulnerable to distortion or erasure by intermediarie
 
 - **Arkiv & IPFS-based decentralized storage**
 
-  - sss
+  - for strage of data, we use Arkiv and IPFS
 
 - **On-chain lineage**
 
@@ -125,74 +123,11 @@ This also leaves traditions vulnerable to distortion or erasure by intermediarie
   - Stores encrypted blobs only.
   - Contract stores the `ipfsHash` as reference.
 
----
-
-## Inheritance Flow Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        INHERITANCE FLOW                          │
-└─────────────────────────────────────────────────────────────────┘
-
-1️⃣  OWNER CREATES INHERITANCE
-   ┌──────────────┐
-   │ Select PDF   │
-   │ + Successor  │
-   └──────┬───────┘
-          │
-          ▼
-   ┌─────────────────────────┐
-   │ ENCRYPT CLIENT-SIDE     │
-   │ • Use successor address │
-   │ • AES-256-GCM           │
-   │ • Generate random IV    │
-   └──────┬──────────────────┘
-          │
-          ▼
-   ┌─────────────────────────┐
-   │ UPLOAD TO IPFS          │
-   │ • Encrypted file only   │
-   │ • Returns IPFS hash     │
-   └──────┬──────────────────┘
-          │
-          ▼
-   ┌─────────────────────────┐
-   │ STORE ON BLOCKCHAIN     │
-   │ • IPFS hash             │
-   │ • Successor address     │
-   │ • Metadata              │
-   └─────────────────────────┘
-
-2️⃣  SUCCESSOR CLAIMS INHERITANCE
-   ┌──────────────────────────┐
-   │ Connect Wallet           │
-   │ (Must be successor)      │
-   └──────┬───────────────────┘
-          │
-          ▼
-   ┌─────────────────────────┐
-   │ VERIFY ON BLOCKCHAIN    │
-   │ • Check successor match │
-   │ • Verify not claimed    │
-   └──────┬──────────────────┘
-          │
-          ▼
-   ┌─────────────────────────┐
-   │ FETCH FROM IPFS         │
-   │ • Download encrypted    │
-   │ • Extract IV + data     │
-   └──────┬──────────────────┘
-          │
-          ▼
-   ┌─────────────────────────┐
-   │ DECRYPT CLIENT-SIDE     │
-   │ • Use their address     │
-   │ • Decrypt with key      │
-   │ • Download PDF          │
-   └─────────────────────────┘
-```
+  
 
 ---
+
+
 
 # Core User Flow
 
@@ -363,18 +298,6 @@ Security limitations:
 
 ---
 
-# Demo
-
-**Main Repository Link**  
-https://github.com/Heirloom-Inheritance-Protocol
-
-**Demo / Deployment Link**  
-https://heirloom-inheritance-protocol.vercel.app/
-
-#　 Deck / Presentation
-https://docs.google.com/presentation/d/1dZ1V8BSY7JjxjKgjzIl1uxYEoeBCLIvdFmhdvrNZLak/edit?usp=sharing
-
----
 
 # Next Steps
 

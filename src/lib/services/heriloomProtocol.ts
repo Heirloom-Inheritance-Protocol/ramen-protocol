@@ -229,6 +229,9 @@ export async function deleteInheritance(
 export async function getOwnerInheritances(
   ownerAddress: `0x${string}`,
 ): Promise<InheritanceData[]> {
+  console.log("🔍 getOwnerInheritances called with address:", ownerAddress);
+  console.log("🔍 Contract address:", CONTRACT_ADDRESS);
+
   // Get array of inheritance IDs for the owner
   const inheritanceIds = (await publicClient.readContract({
     address: CONTRACT_ADDRESS as `0x${string}`,
@@ -236,6 +239,8 @@ export async function getOwnerInheritances(
     functionName: "getOwnerInheritances",
     args: [ownerAddress],
   })) as bigint[];
+
+  console.log("🔍 Found", inheritanceIds.length, "inheritance IDs:", inheritanceIds);
 
   // Fetch details for each inheritance
   const inheritancePromises = inheritanceIds.map(async (id) => {

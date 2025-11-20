@@ -9,10 +9,12 @@ import {
   getOwnerInheritances,
   InheritanceData,
   generateCommitmentFromWallet,
+  createInheritance,
+  getVaultIdForUser,
 } from "@/lib/services/heriloomProtocol";
 import { encryptFileForBoth } from "@/lib/encryption";
 import { CreateInheritanceButton } from "@/components/CreateGroup";
-import { createInheritance, addMemberToVault } from "@/services/relayerAPI";
+import { addMemberToVault } from "@/services/relayerAPI";
 
 interface InheritanceFormProps {
   className?: string;
@@ -141,7 +143,7 @@ export function InheritanceForm({
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Upload failed:", errorData);
-        throw new Error(`Upload failed: ${errorData.error || 'Unknown error'}`);
+        throw new Error(`Upload failed: ${errorData.error || "Unknown error"}`);
       }
 
       const data = await response.json();
@@ -162,29 +164,43 @@ export function InheritanceForm({
       const successorCommitment = generateCommitmentFromWallet(successorWallet);
       console.log("✅ Successor commitment generated:", successorCommitment);
 
-      // 4. Create inheritance via relayer (gasless for user, creates inheritance + vault)
+      // 4. Create inheritance via relayer (gasless - relayer pays gas)
       setUploadingStage("blockchain");
-      console.log("Creating inheritance vault, please wait...");
-      const inheritanceResult = await createInheritance(
-        user.wallet.address, // owner
-        successorCommitment, // successorCommitment (NOT wallet address)
-        data.hash, // ipfsHash
-        selectedTag, // tag
-        selectedFile.name, // fileName
-        selectedFile.size // fileSize
-      );
-      console.log("✅ Inheritance created with ID:", inheritanceResult.inheritanceId);
-      console.log("✅ Vault ID:", inheritanceResult.vaultId);
+      console.log("Creating inheritance vault via relayer, please wait...");
 
-      const inheritanceId = BigInt(inheritanceResult.inheritanceId);
-      const vaultId = BigInt(inheritanceResult.vaultId);
+      const relayerResponse = await fetch(`${process.env.NEXT_PUBLIC_RELAYER_URL || 'http://localhost:3001'}/api/vault/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          owner: user.wallet.address, // Real owner saved to Arkiv database
+          successorCommitment: successorCommitment,
+          ipfsHash: data.hash,
+          tag: selectedTag,
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+        }),
+      });
 
-      // 5. Add owner (creator) as first member to vault
+      if (!relayerResponse.ok) {
+        const errorData = await relayerResponse.json();
+        throw new Error(`Relayer error: ${errorData.message || errorData.error}`);
+      }
+
+      const relayerData = await relayerResponse.json();
+      const inheritanceId = BigInt(relayerData.inheritanceId);
+      const vaultId = BigInt(relayerData.vaultId);
+
+      console.log("✅ Inheritance created with ID:", inheritanceId.toString());
+      console.log("✅ Vault ID:", vaultId.toString());
+
+      // 5. Add owner (creator) as first member to vault via relayer (gasless)
       console.log(`Adding owner as first member to vault ${vaultId}...`);
       await addMemberToVault(ownerCommitment, Number(vaultId));
       console.log("✅ Owner added to vault as first member");
 
-      // 6. Add successor as second member to vault
+      // 6. Add successor as second member to vault via relayer (gasless)
       console.log(`Adding successor as second member to vault ${vaultId}...`);
       await addMemberToVault(successorCommitment, Number(vaultId));
       console.log("✅ Successor added to vault");

@@ -5,6 +5,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { Identity } from "@semaphore-protocol/identity";
 import { getVaults, checkMember } from "@/services/relayerAPI";
 import { cn } from "@/lib/utils";
+import { useVault } from "@/context/VaultContext";
 import {
   Select,
   SelectContent,
@@ -30,16 +31,16 @@ interface GetVaultsProps {
 export default function GetVaults({
   className,
   onVaultSelected,
-  showOnlyUserVaults = false,
+  showOnlyUserVaults = true,
   allowSelection = true,
 }: GetVaultsProps) {
   const { user } = usePrivy();
+  const { selectedVaultId, setSelectedVaultId } = useVault();
   const [vaults, setVaults] = useState<Vault[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userIdentityCommitment, setUserIdentityCommitment] = useState<bigint | null>(null);
-  const [selectedVaultId, setSelectedVaultId] = useState<string | null>(null);
-  const [showUserVaultsOnly, setShowUserVaultsOnly] = useState(showOnlyUserVaults);
+  const [showUserVaultsOnly] = useState(true); // Always show only user's vaults
 
   // Generate user's identity commitment from their wallet address
   useEffect(() => {
@@ -114,6 +115,11 @@ export default function GetVaults({
   const handleVaultSelect = (vaultId: string) => {
     if (allowSelection) {
       setSelectedVaultId(vaultId);
+      // Save the vault index to localStorage for context
+      const vault = vaults.find(v => v.vaultId === vaultId);
+      if (vault && typeof window !== "undefined") {
+        localStorage.setItem("selectedVaultIndex", vault.index.toString());
+      }
     }
     if (onVaultSelected) {
       onVaultSelected(vaultId);
@@ -178,34 +184,6 @@ export default function GetVaults({
             {displayVaults.length} {displayVaults.length === 1 ? "vault" : "vaults"}
           </span>
         </div>
-      </div>
-
-      {/* Toggle for filtering user vaults */}
-      <div className="flex items-center justify-between rounded-lg border bg-neutral-50 p-3 dark:bg-neutral-800/50 dark:border-neutral-700">
-        <div className="flex items-center gap-2">
-          <svg className="h-4 w-4 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <span className="text-sm text-neutral-700 dark:text-neutral-300">
-            Show only my vaults
-          </span>
-        </div>
-        <button
-          onClick={() => setShowUserVaultsOnly(!showUserVaultsOnly)}
-          className={cn(
-            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900",
-            showUserVaultsOnly ? "bg-blue-600 dark:bg-blue-500" : "bg-neutral-300 dark:bg-neutral-600"
-          )}
-          aria-pressed={showUserVaultsOnly}
-          aria-label="Toggle show only my vaults"
-        >
-          <span
-            className={cn(
-              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-              showUserVaultsOnly ? "translate-x-6" : "translate-x-1"
-            )}
-          />
-        </button>
       </div>
 
       {/* Dropdown menu for vault selection */}

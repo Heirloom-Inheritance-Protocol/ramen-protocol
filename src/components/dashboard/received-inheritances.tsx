@@ -3,13 +3,12 @@
 import { JSX, useState, useEffect, useRef } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import {
-  getOwnerInheritances,
-  getSuccessorInheritances,
   deleteInheritance,
-  reinherit,
   InheritanceData,
   generateCommitmentFromWallet,
+  getVaultIdForUser,
 } from "@/lib/services/heriloomProtocol";
+import { addMemberToVault } from "@/services/relayerAPI";
 import { decryptFileForBoth } from "@/lib/encryption";
 import { isAddress } from "viem";
 import IdentityCreation from "../IdentityCreation";
@@ -32,9 +31,12 @@ export function ReceivedInheritances(): JSX.Element {
   const [newSuccessorAddress, setNewSuccessorAddress] = useState("");
   const [reinheritingLoading, setReinheritingLoading] = useState(false);
   const [hasIdentity, setHasIdentity] = useState(false);
-  const [descriptionMap, setDescriptionMap] = useState<
-    Record<string, string>
-  >({});
+  const [identityCommitment, setIdentityCommitment] = useState<string | null>(
+    null,
+  );
+  const [descriptionMap, setDescriptionMap] = useState<Record<string, string>>(
+    {},
+  );
 
   // Check for identity in localStorage
   useEffect(() => {
@@ -42,6 +44,7 @@ export function ReceivedInheritances(): JSX.Element {
       if (typeof window !== "undefined") {
         const commitment = localStorage.getItem("semaphoreCommitment");
         setHasIdentity(!!commitment);
+        setIdentityCommitment(commitment);
       }
     };
 
@@ -79,14 +82,17 @@ export function ReceivedInheritances(): JSX.Element {
         const response = await fetch("/api/arkiv?database=true");
         if (response.ok) {
           const data = await response.json();
+          console.log("📚 Arkiv database entries:", data.database);
           if (data.database && Array.isArray(data.database)) {
             const descriptions: Record<string, string> = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data.database.forEach((entry: any) => {
               if (entry.inheritanceId && entry.description) {
                 descriptions[entry.inheritanceId] = entry.description;
               }
             });
             setDescriptionMap(descriptions);
+            console.log("📝 Description map:", descriptions);
           }
         }
       } catch (error) {
@@ -110,27 +116,84 @@ export function ReceivedInheritances(): JSX.Element {
         setLoading(true);
         setError(null);
 
-        // Generate commitment from wallet address for successor query
-        const successorCommitment = generateCommitmentFromWallet(user.wallet.address);
+        const storedCommitment = identityCommitment;
+        const successorCommitment = storedCommitment
+          ? storedCommitment
+          : generateCommitmentFromWallet(user.wallet.address);
 
-        // Fetch both owner and successor inheritances in parallel
-        const [ownerData, successorData] = await Promise.all([
-          getOwnerInheritances(user.wallet.address as `0x${string}`),
-          getSuccessorInheritances(successorCommitment),
-        ]);
+        console.log("🔍 Fetching inheritances for address:", user.wallet.address);
+        console.log("🔍 Using successor commitment:", successorCommitment);
 
+        // Fetch inheritances from Arkiv database instead of blockchain
+        // (because relayer is the blockchain owner, but Arkiv stores the real user as owner)
+        const arkivResponse = await fetch("/api/arkiv?database=true");
+        const arkivData = await arkivResponse.json();
+
+        console.log("✅ Fetched Arkiv database:", arkivData);
+        console.log("   Total entries:", arkivData.totalEntries);
+
+        if (!arkivData.success || !arkivData.database) {
+          console.warn("⚠️ No Arkiv database found");
+          setInheritances([]);
+          setSuccessorInheritances([]);
+          return;
+        }
+
+        // Filter owner inheritances (where user is the owner)
+        const ownerData = arkivData.database
+          .filter((entry: any) =>
+            entry.owner?.toLowerCase() === user?.wallet?.address?.toLowerCase()
+          )
+          .map((entry: any) => ({
+            id: BigInt(entry.inheritanceId || 0),
+            owner: entry.owner,
+            successorCommitment: BigInt(generateCommitmentFromWallet(entry.successor || "0x0")),
+            ipfsHash: entry.ipfsHash || "",
+            tag: entry.tag || "",
+            fileName: entry.fileName || "",
+            fileSize: BigInt(entry.fileSize || 0),
+            timestamp: BigInt(new Date(entry.createdAt).getTime()),
+            isActive: true,
+            isClaimed: false,
+          }));
+
+        // Filter successor inheritances (where user is the successor)
+        const successorData = arkivData.database
+          .filter((entry: any) =>
+            entry.successor?.toLowerCase() === user?.wallet?.address?.toLowerCase()
+          )
+          .map((entry: any) => ({
+            id: BigInt(entry.inheritanceId || 0),
+            owner: entry.owner,
+            successorCommitment: BigInt(generateCommitmentFromWallet(entry.successor || "0x0")),
+            ipfsHash: entry.ipfsHash || "",
+            tag: entry.tag || "",
+            fileName: entry.fileName || "",
+            fileSize: BigInt(entry.fileSize || 0),
+            timestamp: BigInt(new Date(entry.createdAt).getTime()),
+            isActive: true,
+            isClaimed: false,
+          }));
+
+        console.log("✅ Filtered owner inheritances:", ownerData);
+        console.log("   Count:", ownerData.length);
+        if (ownerData.length > 0) {
+          console.log("   First inheritance:", ownerData[0]);
+        }
+        console.log("✅ Filtered successor inheritances:", successorData);
+        console.log("   Count:", successorData.length);
         setInheritances(ownerData);
         setSuccessorInheritances(successorData);
       } catch (error) {
         console.error("Error fetching inheritances:", error);
-        setError("Failed to fetch inheritances from blockchain");
+        setError("Failed to fetch inheritances from database");
       } finally {
         setLoading(false);
       }
     }
 
     fetchInheritances();
-  }, [user?.wallet?.address]);
+  }, [user?.wallet?.address, identityCommitment]);
 
   // Group inheritances by IPFS hash to show multiple successors in same row
   interface GroupedInheritance {
@@ -181,6 +244,7 @@ export function ReceivedInheritances(): JSX.Element {
   }, {} as Record<string, GroupedInheritance>);
 
   const receivedAssets = Object.values(groupedByIpfs);
+  console.log("📦 Grouped inheritances:", receivedAssets);
 
   // Filter by search query
   const filteredAssets = receivedAssets.filter((group) => {
@@ -296,7 +360,7 @@ export function ReceivedInheritances(): JSX.Element {
         encryptedPackage,
         userAddress,
         inheritance.owner,
-        inheritance.successor,
+        inheritance.successorCommitment.toString(),
       );
 
       // 3. Create downloadable blob
@@ -410,7 +474,9 @@ export function ReceivedInheritances(): JSX.Element {
 
       // Check if the new successor address already exists as a successor for this IPFS hash
       const alreadySuccessor = sameIpfsInheritances.some(
-        (inh) => inh.successor.toLowerCase() === trimmedAddress.toLowerCase(),
+        (inh) =>
+          inh.successorCommitment.toString().toLowerCase() ===
+          trimmedAddress.toLowerCase(),
       );
 
       if (alreadySuccessor) {
@@ -423,20 +489,92 @@ export function ReceivedInheritances(): JSX.Element {
 
     try {
       setReinheritingLoading(true);
-      const newInheritanceId = await reinherit(
-        inheritanceId,
-        trimmedAddress as `0x${string}`,
+
+      // Generate commitment for the new successor
+      const newSuccessorCommitment = generateCommitmentFromWallet(trimmedAddress);
+      console.log("🔄 Passing down inheritance via relayer...");
+      console.log("   Inheritance ID:", inheritanceId.toString());
+      console.log("   New Successor Commitment:", newSuccessorCommitment);
+
+      // Call relayer to pass down inheritance (gasless)
+      const relayerResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_RELAYER_URL || 'http://localhost:3001'}/api/vault/pass-down`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inheritanceId: inheritanceId.toString(),
+            newSuccessorCommitment: newSuccessorCommitment,
+          }),
+        }
       );
 
-      // Refresh the inheritances list
-      if (user?.wallet?.address) {
-        const [ownerData, successorData] = await Promise.all([
-          getOwnerInheritances(user.wallet.address as `0x${string}`),
-          getSuccessorInheritances(user.wallet.address as `0x${string}`),
-        ]);
+      if (!relayerResponse.ok) {
+        const errorData = await relayerResponse.json();
+        throw new Error(`Relayer error: ${errorData.message || errorData.error}`);
+      }
 
-        setInheritances(ownerData);
-        setSuccessorInheritances(successorData);
+      const relayerData = await relayerResponse.json();
+      const newInheritanceId = BigInt(relayerData.newInheritanceId);
+
+      console.log("✅ Inheritance passed down with new ID:", newInheritanceId.toString());
+
+      // Add new successor to vault (gasless via relayer)
+      if (currentInheritance && user?.wallet?.address) {
+        // Get vault ID from blockchain
+        const vaultId = await getVaultIdForUser(user.wallet.address as `0x${string}`);
+        if (vaultId) {
+          console.log(`Adding new successor to vault ${vaultId}...`);
+          await addMemberToVault(newSuccessorCommitment, Number(vaultId));
+          console.log("✅ New successor added to vault");
+        }
+      }
+
+      // Refresh the inheritances list from Arkiv database
+      if (user?.wallet?.address) {
+        const arkivResponse = await fetch("/api/arkiv?database=true");
+        const arkivData = await arkivResponse.json();
+
+        if (arkivData.success && arkivData.database) {
+          const ownerData = arkivData.database
+            .filter((entry: any) =>
+              entry.owner?.toLowerCase() === user?.wallet?.address?.toLowerCase()
+            )
+            .map((entry: any) => ({
+              id: BigInt(entry.inheritanceId || 0),
+              owner: entry.owner,
+              successorCommitment: BigInt(generateCommitmentFromWallet(entry.successor || "0x0")),
+              ipfsHash: entry.ipfsHash || "",
+              tag: entry.tag || "",
+              fileName: entry.fileName || "",
+              fileSize: BigInt(entry.fileSize || 0),
+              timestamp: BigInt(new Date(entry.createdAt).getTime()),
+              isActive: true,
+              isClaimed: false,
+            }));
+
+          const successorData = arkivData.database
+            .filter((entry: any) =>
+              entry.successor?.toLowerCase() === user?.wallet?.address?.toLowerCase()
+            )
+            .map((entry: any) => ({
+              id: BigInt(entry.inheritanceId || 0),
+              owner: entry.owner,
+              successorCommitment: BigInt(generateCommitmentFromWallet(entry.successor || "0x0")),
+              ipfsHash: entry.ipfsHash || "",
+              tag: entry.tag || "",
+              fileName: entry.fileName || "",
+              fileSize: BigInt(entry.fileSize || 0),
+              timestamp: BigInt(new Date(entry.createdAt).getTime()),
+              isActive: true,
+              isClaimed: false,
+            }));
+
+          setInheritances(ownerData);
+          setSuccessorInheritances(successorData);
+        }
       }
 
       alert(
@@ -616,7 +754,9 @@ export function ReceivedInheritances(): JSX.Element {
                               className="flex items-center gap-2"
                             >
                               <span className="font-mono text-sm text-neutral-700 dark:text-neutral-300">
-                                {shortenAddress(successor.address)}
+                                {shortenAddress(
+                                  successor.commitment.toString(),
+                                )}
                               </span>
                               {inheritanceData && (
                                 <button
