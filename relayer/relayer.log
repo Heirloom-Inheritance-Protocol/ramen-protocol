@@ -1,0 +1,31 @@
+
+🚀 ====================================
+   Ombu Relayer Server
+   ====================================
+   🌐 URL: http://localhost:3001
+   📡 Network: https://lb.drpc.live/arbitrum-sepolia/AuFiKv0x7UTRpr8JwDNyY024DUckiNsR8IlAqhnKxixj
+   📝 Contract: 0x22a90D288390580865d65D8C288bE8B838a5cf0e
+   ====================================
+
+📥 GET /api/members/0
+🔵 Fetching members for group 0...
+   Fetching from subgraph: https://api.studio.thegraph.com/query/14377/semaphore-arbitrum-sepolia/v4.0.0
+   Group ID: 0
+⚠️ Subgraph query failed: Cannot destructure property 'groups' of '(intermediate value)' as it is undefined.
+   Full error: TypeError: Cannot destructure property 'groups' of '(intermediate value)' as it is undefined.
+    at SemaphoreSubgraph.getGroup (file:///Users/DevEnv/Documents/sandbox/InvisibleGarden/Invisible_Garden_Ombu/relayer/node_modules/@semaphore-protocol/data/dist/index.js:558:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async SemaphoreSubgraph.getGroupMembers (file:///Users/DevEnv/Documents/sandbox/InvisibleGarden/Invisible_Garden_Ombu/relayer/node_modules/@semaphore-protocol/data/dist/index.js:570:23)
+    at async file:///Users/DevEnv/Documents/sandbox/InvisibleGarden/Invisible_Garden_Ombu/relayer/routes/members.js:29:41
+   Error stack: TypeError: Cannot destructure property 'groups' of '(intermediate value)' as it is undefined.
+    at SemaphoreSubgraph.getGroup (file:///Users/DevEnv/Documents/sandbox/InvisibleGarden/Invisible_Garden_Ombu/relayer/node_modules/@semaphore-protocol/data/dist/index.js:558:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async SemaphoreSubgraph.getGroupMembers (file:///Users/DevEnv/Documents/sandbox/InvisibleGarden/Invisible_Garden_Ombu/relayer/node_modules/@semaphore-protocol/data/dist/index.js:570:23)
+    at async file:///Users/DevEnv/Documents/sandbox/InvisibleGarden/Invisible_Garden_Ombu/relayer/routes/members.js:29:41
+   Falling back to cached members only
+   Using 0 members from cache
+✅ Group data fetched successfully
+   Root: 17424196208376182481156184655913317379848157058980156704625238174505214105729
+   Depth: 0
+   Size: 1
+   Members: 0
