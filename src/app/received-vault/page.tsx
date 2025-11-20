@@ -9,6 +9,7 @@ import { FloatingNav } from "@/components/ui/floating-navbar";
 import { ReceivedInheritances } from "@/components/dashboard/received-inheritances";
 import { MAIN_NAV_ITEMS } from "@/lib/navigation";
 import AddBeneficiary from "@/components/AddBeneficiary";
+import GetVaults from "@/components/GetVaults";
 
 export default function ReceivedVaultPage(): JSX.Element {
   const router = useRouter();
@@ -48,6 +49,7 @@ export default function ReceivedVaultPage(): JSX.Element {
                 successors.
               </p>
             </header>
+            <GetVaults />
             <ReceivedInheritances />
             <AddBeneficiary />
           </section>

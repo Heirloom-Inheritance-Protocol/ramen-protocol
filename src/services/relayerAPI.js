@@ -77,7 +77,7 @@ export async function createVault() {
  */
 export async function getVaults() {
   try {
-    const response = await fetch(`${RELAYER_URL}/api/vault/get-vaults`);
+    const response = await fetch(`${RELAYER_URL}/api/vaults`);
 
     if (!response.ok) {
       const error = await response.json();

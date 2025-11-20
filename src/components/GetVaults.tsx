@@ -17,18 +17,22 @@ interface GetVaultsProps {
   className?: string;
   onVaultSelected?: (vaultId: string) => void;
   showOnlyUserVaults?: boolean;
+  allowSelection?: boolean;
 }
 
 export default function GetVaults({
   className,
   onVaultSelected,
   showOnlyUserVaults = false,
+  allowSelection = true,
 }: GetVaultsProps) {
   const { user } = usePrivy();
   const [vaults, setVaults] = useState<Vault[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userIdentityCommitment, setUserIdentityCommitment] = useState<bigint | null>(null);
+  const [selectedVaultId, setSelectedVaultId] = useState<string | null>(null);
+  const [showUserVaultsOnly, setShowUserVaultsOnly] = useState(showOnlyUserVaults);
 
   // Generate user's identity commitment from their wallet address
   useEffect(() => {
@@ -96,9 +100,18 @@ export default function GetVaults({
     checkMemberships();
   }, [userIdentityCommitment, vaults.length]);
 
-  const displayVaults = showOnlyUserVaults
+  const displayVaults = showUserVaultsOnly
     ? vaults.filter((v) => v.isMember === true)
     : vaults;
+
+  const handleVaultClick = (vaultId: string) => {
+    if (allowSelection) {
+      setSelectedVaultId(vaultId);
+    }
+    if (onVaultSelected) {
+      onVaultSelected(vaultId);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -151,11 +164,41 @@ export default function GetVaults({
     <div className={cn("space-y-3", className)}>
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">
-          {showOnlyUserVaults ? "Your Vaults" : "All Vaults"}
+          Vaults
         </h3>
-        <span className="text-xs text-neutral-600 dark:text-neutral-400">
-          {displayVaults.length} {displayVaults.length === 1 ? "vault" : "vaults"}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-neutral-600 dark:text-neutral-400">
+            {displayVaults.length} {displayVaults.length === 1 ? "vault" : "vaults"}
+          </span>
+        </div>
+      </div>
+
+      {/* Toggle for filtering user vaults */}
+      <div className="flex items-center justify-between rounded-lg border bg-neutral-50 p-3 dark:bg-neutral-800/50 dark:border-neutral-700">
+        <div className="flex items-center gap-2">
+          <svg className="h-4 w-4 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            Show only my vaults
+          </span>
+        </div>
+        <button
+          onClick={() => setShowUserVaultsOnly(!showUserVaultsOnly)}
+          className={cn(
+            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900",
+            showUserVaultsOnly ? "bg-blue-600 dark:bg-blue-500" : "bg-neutral-300 dark:bg-neutral-600"
+          )}
+          aria-pressed={showUserVaultsOnly}
+          aria-label="Toggle show only my vaults"
+        >
+          <span
+            className={cn(
+              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+              showUserVaultsOnly ? "translate-x-6" : "translate-x-1"
+            )}
+          />
+        </button>
       </div>
 
       <div className="space-y-2">
@@ -164,9 +207,10 @@ export default function GetVaults({
             key={vault.vaultId}
             className={cn(
               "rounded-lg border bg-white p-4 shadow-sm transition dark:bg-white/10 dark:border-neutral-600",
-              onVaultSelected && "cursor-pointer hover:border-blue-300 hover:shadow-md dark:hover:border-blue-600"
+              (allowSelection || onVaultSelected) && "cursor-pointer hover:border-blue-300 hover:shadow-md dark:hover:border-blue-600",
+              selectedVaultId === vault.vaultId && "border-blue-500 ring-2 ring-blue-200 dark:border-blue-400 dark:ring-blue-900/50"
             )}
-            onClick={() => onVaultSelected && onVaultSelected(vault.vaultId)}
+            onClick={() => handleVaultClick(vault.vaultId)}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
