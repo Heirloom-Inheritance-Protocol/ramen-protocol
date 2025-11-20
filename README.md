@@ -35,16 +35,35 @@ Short concept: A tool that allows people who wish to preserve cultural assets or
 
 ## Problem / Motivation
 
-Currently, those who want to pass down their secret knowledge or skills have no choice but to share secret information directly — either orally or on paper.  
-There is no verifiable way to record _who passed it to whom_, which makes extinction of such valuable knowledge a real risk.
+### Problem
 
-Traditional craftsmanship is disappearing globally not only because knowledge is lost, but because the act of transmission is invisible to institutions and future generations.  
-Anchoring these successions on-chain — with auditable records and public funding mechanisms — makes cultural inheritance _visible_ and _preservable_.
+Human knowledge and culture are fundamentally built on inheritance — messages, skills, and wisdom passed down from one generation to the next.
+Yet even though these inherited assets are among humanity’s most valuable treasures, there is still no secure, privacy-preserving way to pass secret or sensitive knowledge to a specific successor, nor a method to make inheritance relationships visible, verifiable, and permanently traceable.
 
-Additional risks:
+Because these successions leave no proof of “who passed what to whom,” vast amounts of knowledge remain structurally invisible.
+And what cannot be seen cannot be preserved.
 
-- Even though such cultural assets are meaningful and important to preserve, it is often unclear who contributed to their preservation.
-- Historically sensitive knowledge is vulnerable to censorship by institutions or governments. Oral traditions can be altered, sanitized, or erased.
+Traditional skills, oral traditions, and region-specific craftsmanship are disappearing rapidly worldwide.
+This isn’t only because the knowledge itself is fragile, but because the act of transmission is invisible, leaving institutions and future generations unaware of its existence.
+
+### Causes
+1. Inheritance relationships are unverifiable and unrecorded.
+
+There is no system that captures who contributed, in what way, or along which lineage.
+As a result, contributors cannot be recognized or rewarded, and their role in preservation becomes impossible to measure.
+
+2. Knowledge holders lack incentives to pass down what they know.
+
+Since their contributions go unseen and unrewarded, motivation declines.
+Invisibility leads to disengagement — and disengagement accelerates loss.
+
+3. Preservation organizations cannot identify or support true inheritors.
+
+Without verifiable lineage records, institutions cannot direct funding or protection toward those who genuinely carry cultural knowledge.
+
+4. Unrecorded traditions are vulnerable to distortion and censorship.
+
+Oral or undocumented knowledge can be easily altered, sanitized, or erased by intermediaries or authority figures, with no verifiable original source to reference.
 
 ## Solution
 
