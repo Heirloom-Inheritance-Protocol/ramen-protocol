@@ -32,9 +32,9 @@ export function ReceivedInheritances(): JSX.Element {
   const [newSuccessorAddress, setNewSuccessorAddress] = useState("");
   const [reinheritingLoading, setReinheritingLoading] = useState(false);
   const [hasIdentity, setHasIdentity] = useState(false);
-  const [descriptionMap, setDescriptionMap] = useState<
-    Record<string, string>
-  >({});
+  const [descriptionMap, setDescriptionMap] = useState<Record<string, string>>(
+    {},
+  );
 
   // Check for identity in localStorage
   useEffect(() => {
@@ -81,6 +81,7 @@ export function ReceivedInheritances(): JSX.Element {
           const data = await response.json();
           if (data.database && Array.isArray(data.database)) {
             const descriptions: Record<string, string> = {};
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data.database.forEach((entry: any) => {
               if (entry.inheritanceId && entry.description) {
                 descriptions[entry.inheritanceId] = entry.description;
@@ -111,7 +112,9 @@ export function ReceivedInheritances(): JSX.Element {
         setError(null);
 
         // Generate commitment from wallet address for successor query
-        const successorCommitment = generateCommitmentFromWallet(user.wallet.address);
+        const successorCommitment = generateCommitmentFromWallet(
+          user.wallet.address,
+        );
 
         // Fetch both owner and successor inheritances in parallel
         const [ownerData, successorData] = await Promise.all([
@@ -296,7 +299,7 @@ export function ReceivedInheritances(): JSX.Element {
         encryptedPackage,
         userAddress,
         inheritance.owner,
-        inheritance.successor,
+        inheritance.successorCommitment.toString(),
       );
 
       // 3. Create downloadable blob
@@ -410,7 +413,9 @@ export function ReceivedInheritances(): JSX.Element {
 
       // Check if the new successor address already exists as a successor for this IPFS hash
       const alreadySuccessor = sameIpfsInheritances.some(
-        (inh) => inh.successor.toLowerCase() === trimmedAddress.toLowerCase(),
+        (inh) =>
+          inh.successorCommitment.toString().toLowerCase() ===
+          trimmedAddress.toLowerCase(),
       );
 
       if (alreadySuccessor) {
@@ -425,7 +430,7 @@ export function ReceivedInheritances(): JSX.Element {
       setReinheritingLoading(true);
       const newInheritanceId = await reinherit(
         inheritanceId,
-        trimmedAddress as `0x${string}`,
+        trimmedAddress as unknown as bigint,
       );
 
       // Refresh the inheritances list
@@ -616,7 +621,9 @@ export function ReceivedInheritances(): JSX.Element {
                               className="flex items-center gap-2"
                             >
                               <span className="font-mono text-sm text-neutral-700 dark:text-neutral-300">
-                                {shortenAddress(successor.address)}
+                                {shortenAddress(
+                                  successor.commitment.toString(),
+                                )}
                               </span>
                               {inheritanceData && (
                                 <button
