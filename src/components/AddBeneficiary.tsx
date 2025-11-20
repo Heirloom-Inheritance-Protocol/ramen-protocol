@@ -3,11 +3,14 @@ import { usePrivy } from "@privy-io/react-auth";
 import { isAddress } from "viem";
 import { cn } from "@/lib/utils";
 import { reinherit } from "@/lib/services/heriloomProtocol";
+import { addMemberToVault } from "@/services/relayerAPI";
+import { Identity } from "@semaphore-protocol/identity";
 
 interface AddBeneficiaryProps {
   onBeneficiaryAdded?: (address: string) => void;
   className?: string;
   inheritanceId?: bigint | null;
+  vaultId?: number | null;
   mode?: "add" | "reinherit";
   disabled?: boolean;
   showCondition?: boolean;
@@ -17,6 +20,7 @@ export default function AddBeneficiaryButton({
   onBeneficiaryAdded,
   className,
   inheritanceId = null,
+  vaultId = null,
   mode = "add",
   disabled = false,
   showCondition = true,
@@ -37,7 +41,7 @@ export default function AddBeneficiaryButton({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!isFormValid) return;
 
     setIsSubmitting(true);
@@ -59,7 +63,7 @@ export default function AddBeneficiaryButton({
       // Handle reinherit mode
       if (mode === "reinherit" && inheritanceId !== null && inheritanceId !== undefined) {
         const newInheritanceId = await reinherit(inheritanceId, trimmedAddress);
-        
+
         // Call the callback if provided
         if (onBeneficiaryAdded) {
           await onBeneficiaryAdded(beneficiaryAddress);
@@ -69,10 +73,30 @@ export default function AddBeneficiaryButton({
           `Inheritance successfully passed down! New inheritance ID: ${newInheritanceId.toString()}`,
         );
       } else {
-        // Handle add mode - just call the callback
+        // Handle add mode - add member to vault via relayer
+        if (vaultId === null || vaultId === undefined) {
+          throw new Error("Vault ID is required to add a member");
+        }
+
+        // Generate identity commitment for the beneficiary
+        // In a real app, the beneficiary would generate this themselves
+        // For now, we create a deterministic identity from their address
+        const identity = new Identity(trimmedAddress);
+        const identityCommitment = identity.commitment;
+
+        // Add member to vault via relayer
+        const result = await addMemberToVault(identityCommitment, vaultId);
+
+        console.log("✅ Member added to vault:", result);
+
+        // Call the callback if provided
         if (onBeneficiaryAdded) {
           await onBeneficiaryAdded(beneficiaryAddress);
         }
+
+        alert(
+          `Beneficiary successfully added to vault! Transaction: ${result.transactionHash}`,
+        );
       }
 
       // Reset form

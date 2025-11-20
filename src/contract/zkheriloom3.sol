@@ -10,6 +10,11 @@ contract ZkHeriloom3 {
     uint256 public groupCounter;
     address public admin;
 
+    constructor(address _semaphoreAddress) {
+        semaphore = ISemaphore(_semaphoreAddress);
+        admin = msg.sender;
+    }
+
     struct Inheritance {
         address owner;
         address successor;
@@ -559,5 +564,13 @@ contract ZkHeriloom3 {
 
 	function getAllUsersFromVault(uint256 _vaultId) external view returns (address[] memory) {
 		return vaultUsers[_vaultId];
+	}
+
+	function getVaultIdsLength() external view returns (uint256) {
+		return vaultIds.length;
+	}
+
+	function getAllVaultIds() external view returns (uint256[] memory) {
+		return vaultIds;
 	}
 }

@@ -2,6 +2,8 @@ import { decodeEventLog } from "viem";
 import { sepolia } from "viem/chains";
 import { getWalletClient, publicClient } from "../viem";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../contract";
+import { addMemberToVault, createVault } from "../../services/relayerAPI";
+import { Identity } from "@semaphore-protocol/identity";
 
 interface CreateInheritanceParams {
   successor: `0x${string}`;
@@ -90,7 +92,92 @@ export async function createInheritance({
   });
 
   const args = decoded.args as unknown as { inheritanceId: bigint };
-  return args.inheritanceId;
+  const inheritanceId = args.inheritanceId;
+
+  // Note: Vault creation and member addition now happens during IPFS upload
+  // The successor is added to the vault before creating the inheritance
+  // This enables zero-knowledge proofs for the inheritance vault
+
+  return inheritanceId;
+}
+
+/**
+ * Gets the vault ID for a user address
+ * @param userAddress The user's wallet address
+ * @returns The vault ID or null if not found
+ */
+export async function getVaultIdForUser(
+  userAddress: `0x${string}`,
+): Promise<bigint | null> {
+  try {
+    const userData = (await publicClient.readContract({
+      address: CONTRACT_ADDRESS as `0x${string}`,
+      abi: CONTRACT_ABI,
+      functionName: "userDatabase",
+      args: [userAddress],
+    })) as [bigint, bigint, bigint, bigint];
+
+    const vaultId = userData[0]; // vaultID is the first element
+    return vaultId !== BigInt(0) ? vaultId : null;
+  } catch (error) {
+    console.error("Error getting vault ID:", error);
+    return null;
+  }
+}
+
+/**
+ * Generates a commitment hash from a wallet address
+ * Creates a deterministic Semaphore identity from the wallet address
+ * @param walletAddress - The wallet address to generate commitment from
+ * @returns The commitment hash as a string
+ */
+export function generateCommitmentFromWallet(walletAddress: string): string {
+  // Create a deterministic identity from the wallet address
+  // This allows the successor to recreate their identity later by signing with their wallet
+  const identity = new Identity(walletAddress);
+  return identity.commitment.toString();
+}
+
+/**
+ * Gets identity commitment from localStorage
+ * @returns The identity commitment string or null
+ */
+function getIdentityCommitmentFromStorage(): string | null {
+  if (typeof window === "undefined") return null;
+  
+  try {
+    const identityData = localStorage.getItem("semaphoreIdentity");
+    if (!identityData) return null;
+    
+    const identity = JSON.parse(identityData);
+    return identity.commitment || null;
+  } catch (error) {
+    console.error("Error reading identity from storage:", error);
+    return null;
+  }
+}
+
+/**
+ * Adds a member to a vault using the relayer
+ * @param userAddress The user's wallet address to get their vault
+ * @param identityCommitment The identity commitment to add (optional, will try to get from storage)
+ * @returns Promise that resolves when member is added
+ */
+export async function addMemberToUserVault(
+  userAddress: `0x${string}`,
+  identityCommitment?: string,
+): Promise<void> {
+  const vaultId = await getVaultIdForUser(userAddress);
+  if (!vaultId || vaultId === BigInt(0)) {
+    throw new Error("No vault found for user. Create an inheritance first.");
+  }
+
+  const commitment = identityCommitment || getIdentityCommitmentFromStorage();
+  if (!commitment) {
+    throw new Error("No identity commitment found. Please create a Semaphore identity first.");
+  }
+
+  await addMemberToVault(commitment, Number(vaultId));
 }
 
 /**
