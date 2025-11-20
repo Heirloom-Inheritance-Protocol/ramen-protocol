@@ -24,6 +24,13 @@ contract ZkHeriloom3 {
         uint256 generationLevel; // How many times it has been passed down
     }
 
+    struct UserDatabase {
+        uint256 vaultID;
+        uint256 index;
+        uint256 identityCommitment;
+        uint256 merkleTreeRoot;
+    }
+
     // Mapping from user address to their database struct
     mapping(address => UserDatabase) public userDatabase;
 

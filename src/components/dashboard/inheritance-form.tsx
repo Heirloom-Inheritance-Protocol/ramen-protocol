@@ -11,6 +11,7 @@ import {
   InheritanceData,
 } from "@/lib/services/heriloomProtocol";
 import { encryptFileForBoth } from "@/lib/encryption";
+import { CreateInheritanceButton } from "@/components/CreateGroup";
 
 interface InheritanceFormProps {
   className?: string;
@@ -358,17 +359,11 @@ export function InheritanceForm({
             </p>
           </label>
 
-          <button
+          <CreateInheritanceButton
             type="submit"
             disabled={!isFormValid || uploading}
-            className="w-full rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-neutral-900 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200 dark:disabled:hover:bg-white cursor-pointer"
-          >
-            {uploadingStage === "ipfs"
-              ? "Uploading to IPFS..."
-              : uploadingStage === "blockchain"
-              ? "Creating on Blockchain..."
-              : "Create Inheritance"}
-          </button>
+            uploadingStage={uploadingStage}
+          />
 
           {(loadingInheritances || inheritances.length > 0) && (
             <div className="mt-6 space-y-4">
