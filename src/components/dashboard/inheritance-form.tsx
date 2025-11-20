@@ -128,7 +128,7 @@ export function InheritanceForm({
         `${selectedFile.name}.encrypted`,
       );
 
-      console.log("Uploading encrypted file to IPFS...");
+      console.log("Uploading encrypted file to Arkiv...");
 
       const response = await fetch("/api/upload-ipfs", {
         method: "POST",
@@ -141,7 +141,7 @@ export function InheritanceForm({
 
       const data = await response.json();
 
-      console.log("Encrypted file uploaded to IPFS:", data);
+      console.log("Encrypted file uploaded to Arkiv:", data);
 
       // Create inheritance on blockchain
       setUploadingStage("blockchain");
@@ -273,7 +273,7 @@ export function InheritanceForm({
             </p>
             <p className="text-sm text-neutral-600 dark:text-neutral-200">
               🔐 Your PDF will be encrypted client-side with AES-256-GCM before
-              being uploaded to IPFS. Both you (the owner) and the designated
+              being uploaded to ARKIV. Both you (the owner) and the designated
               successor can decrypt and download it using your respective wallet
               addresses.
             </p>

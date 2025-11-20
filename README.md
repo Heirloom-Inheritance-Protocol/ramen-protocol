@@ -1,14 +1,14 @@
 # Secret-Knowledge-Inheritance-Protocol
 
- Short concept: A tool that allows people who wish to preserve cultural assets or secret knowledge to securely and permanently pass them down to others across generations.
+Short concept: A tool that allows people who wish to preserve cultural assets or secret knowledge to securely and permanently pass them down to others across generations.
 
 ---
 
 ### Repository / MVP / DEMO / Deck
 
-- **Product page:** 
+- **Product page:**
 
-- **Presentation Video:** 
+- **Presentation Video:**
 
 - **Deck / Presentation:** https://docs.google.com/presentation/d/1dZ1V8BSY7JjxjKgjzIl1uxYEoeBCLIvdFmhdvrNZLak/edit?usp=sharing
 
@@ -24,7 +24,6 @@
 
 - cruujon, DaroMacs, ariiellus
 
-
 ---
 
 # Project Description
@@ -38,6 +37,7 @@ Most transmissions leave no record of “who passed what to whom.”
 This structural invisibility makes preservation impossible, and countless oral traditions, craft techniques, and region-specific knowledge systems continue to disappear at an accelerating pace.
 
 ### Causes
+
 1. Inheritance relationships are invisible and unverifiable.
 
 There is no reliable way to document who passed what to whom.
@@ -62,7 +62,7 @@ This also leaves traditions vulnerable to distortion or erasure by intermediarie
 ## Solution
 
 - Record _who (wallet)_ passed knowledge to _whom (wallet)_ on-chain, preserving lineage and provenance.
-- using ZK & client-side Encryption* so the knowledge itself remains private.
+- using ZK & client-side Encryption\* so the knowledge itself remains private.
 - Store encrypted data on IPFS/Arkiv; only its hash (CID) is referenced on-chain.
 - Only the qualified/designated successor's wallet can derive the correct key to decrypt the content.
 - This enables preservation of private knowledge without forcing public disclosure.
@@ -71,7 +71,7 @@ This also leaves traditions vulnerable to distortion or erasure by intermediarie
 ## Target Users
 
 - Individuals wanting to pass down secret & valuable knowledge privately.
-- Examples: 
+- Examples:
   - A restaurant owner with a secret recipe but no successor.
   - Craftsmen with unique techniques that cannot be publicised.
   - Oral storytelling traditions and local cultural narratives.
@@ -340,7 +340,7 @@ This ensures that historical knowledge is preserved with integrity and that cont
 
 - Files are encrypted **before upload** (E2E).
 - Only successor wallet can derive the correct key.
-- No keys stored on-chain, off-chain, or in IPFS.
+- No keys stored on-chain, off-chain, or in ARKIV.
 - IPFS blobs are public but unreadable.
 - On-chain lineage is tamper-proof.
 
@@ -371,11 +371,10 @@ https://github.com/Heirloom-Inheritance-Protocol
 **Demo / Deployment Link**  
 https://heirloom-inheritance-protocol.vercel.app/
 
-#　Deck / Presentation
+#　 Deck / Presentation
 https://docs.google.com/presentation/d/1dZ1V8BSY7JjxjKgjzIl1uxYEoeBCLIvdFmhdvrNZLak/edit?usp=sharing
 
 ---
-
 
 # Next Steps
 
@@ -397,6 +396,5 @@ https://docs.google.com/presentation/d/1dZ1V8BSY7JjxjKgjzIl1uxYEoeBCLIvdFmhdvrNZ
   - Integrate Gitcoin stack for donation and grant-based preservation funding.
   - Run funding rounds for cultural assets.
   - Collaborate with local governments and cultural institutions to test real-world deployments.
-
 
 ---

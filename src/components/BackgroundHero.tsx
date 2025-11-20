@@ -26,7 +26,7 @@ export function BackgroundLinesHero() {
         />
         <p className="text-base text-neutral-700 dark:text-neutral-400 md:text-lg">
           Record who passed knowledge to whom on-chain, preserving lineage and
-          provenance. Encrypt content client-side and store on IPFS, enabling
+          provenance. Encrypt content client-side and store on ARKIV, enabling
           preservation of private cultural assets without forcing public
           disclosure.
         </p>
